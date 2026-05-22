@@ -1,0 +1,54 @@
+// Surface & layout (dark)
+$color-bg: #0c0e12;
+$color-bg-subtle: #141820;
+$color-surface: #161a22;
+$color-surface-raised: #1c212c;
+$color-surface-inset: #1a1f28;
+$color-border: #2a3140;
+$color-border-strong: #3d4658;
+
+// Brand
+$color-primary: #2dd4bf;
+$color-primary-hover: #5eead4;
+$color-primary-muted: rgba(45, 212, 191, 0.1);
+$color-primary-ring: rgba(45, 212, 191, 0.22);
+
+// Semantic
+$color-accent: #38bdf8;
+$color-warning: #fbbf24;
+$color-warning-bg: rgba(251, 191, 36, 0.08);
+$color-warning-border: rgba(251, 191, 36, 0.35);
+$color-best-bg: rgba(45, 212, 191, 0.06);
+$color-best-border: rgba(45, 212, 191, 0.32);
+$color-stress-bg: rgba(251, 191, 36, 0.06);
+$color-stress-border: rgba(251, 191, 36, 0.25);
+
+// Text
+$color-text: #eef0f4;
+$color-text-secondary: #c4cad6;
+$color-text-muted: #8b93a8;
+$color-text-dim: #5c6478;
+
+// Radius & shadow
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 14px;
+$radius-xl: 18px;
+
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+$shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+$shadow-sidebar: 4px 0 24px rgba(0, 0, 0, 0.35);
+$shadow-glow: 0 0 20px rgba(45, 212, 191, 0.12);
+
+// Layout
+$sidebar-width: 300px;
+$content-max: 1440px;
+$bp-tablet: 768px;
+$bp-wide: 1100px;
+
+$font-sans: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+$transition-fast: 0.15s ease;
+$transition-base: 0.2s ease;
