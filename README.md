@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# Estate Scouter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+아파트 분양권 매매 시 **최대 대출 한도**와 **매입 가능 금액**을 계산하는 웹 계산기입니다.  
+소득, 자산, 금리, 스트레스 DSR 조건을 입력하면 1금융·2금융·순수 고정금리 시나리오를 한눈에 비교할 수 있습니다.
 
-Currently, two official plugins are available:
+## 주요 기능
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **DSR 기반 대출 한도 계산** — 1금융 40%, 2금융 50% 기준
+- **스트레스 DSR 자동 반영** — 금리 유형(변동·혼합·주기·순수고정)에 따른 가산금리 자동 계산
+- **시나리오 비교** — 1금융 주담대 / 2금융 주담대 / 1금융 순수고정 30년
+- **입력값 자동 저장** — 브라우저 localStorage에 설정 유지
+- **다크 테마 UI** — 좌측 고정 입력 패널 + 결과 비교 테이블
 
-## React Compiler
+## 기술 스택
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 18 + TypeScript
+- Vite 5
+- SCSS
 
-## Expanding the ESLint configuration
+## 시작하기
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+빌드:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
+npm run preview
 ```
+
+## 입력 항목
+
+| 항목 | 설명 |
+|------|------|
+| 소득 | 2025/2026년 원천징수 기준 (만원) |
+| 자산 | 보유 자기자본 (만원) |
+| 금리 | 1금융·2금융·고정 30년 금리 (%) |
+| 스트레스 DSR | 기본 스트레스 금리 + 금리 유형 선택 |
+| 상환 기간 | 대출 만기 (년) |
+
+## 스트레스 DSR 반영률
+
+적용 가산금리 = **기본 스트레스 금리 × 반영률**
+
+| 금리 유형 | 반영률 |
+|-----------|--------|
+| 변동형 | 100% |
+| 혼합형 (고정 5년 미만) | 100% |
+| 혼합형 (고정 5~9년) | 80% |
+| 혼합형 (고정 9~15년) | 60% |
+| 혼합형 (고정 15~21년) | 40% |
+| 주기형 (5년 주기) | 40% |
+| 주기형 (9~15년 주기) | 30% |
+| 주기형 (15~21년 주기) | 20% |
+| 순수 고정금리 (만기 고정) | 0% |
+
+## 계산 방식
+
+- **원리금균등상환** 기준 월 납입액 산출
+- DSR 한도 내 최대 대출 원금 역산
+- **매입 가능 금액** = 자기자본 + 최대 대출금
+- 스트레스 DSR 적용 시: `적용 금리 = 실제 금리 + 가산금리`
+
+## 프로젝트 구조
+
+```
+src/
+├── App.tsx              # 메인 UI
+├── hooks/
+│   └── useAppSettings.ts
+├── utils/
+│   ├── calculator.ts    # DSR·대출 계산
+│   ├── stressDsr.ts     # 스트레스 DSR 반영률
+│   └── storage.ts       # localStorage 저장
+└── styles/
+```
+
+## 주의사항
+
+이 계산기는 **참고용**입니다. 실제 대출 한도는 금융기관 심사, LTV, 규제 지역, 기존 부채 등에 따라 달라질 수 있습니다.
