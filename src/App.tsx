@@ -75,7 +75,7 @@ function App() {
     , results[0]);
   }, [results]);
 
-  const maxSlider = Math.ceil(bestResult.stressMaxPropertyPrice / 10000);
+  const maxSlider = Math.ceil(Math.max(...results.map(r => r.stressMaxPropertyPrice)) / 10000);
   const effectiveTargetMan = targetPriceMan > 0 ? Math.min(targetPriceMan, maxSlider) : Math.floor(bestResult.adjustedPrice / 10000);
   const targetWon = effectiveTargetMan * 10000;
 
