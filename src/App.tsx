@@ -92,20 +92,25 @@ function App() {
     return calcAcquisitionCosts(targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
   }, [targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths]);
 
+  const ltvLimitWon = targetWon * (ltv / 100);
+
   const simulations = useMemo(() => {
     return results.map((r) => {
       const totalNeeded = targetWon + targetCosts.total;
       const assetsWon = assets * 10000;
       const requiredLoan = Math.max(0, totalNeeded - assetsWon);
       const maxLoan = r.stressMaxLoanAmount;
-      const affordable = requiredLoan <= maxLoan;
+      const ltvOver = requiredLoan > ltvLimitWon;
+      const dsrOver = requiredLoan > maxLoan;
+      const affordable = !ltvOver && !dsrOver;
       const monthly = requiredLoan > 0
         ? calcMonthlyPayment(requiredLoan, r.effectiveRate, r.label.includes('30년') ? 30 : loanTermYears)
         : 0;
       const loanMargin = maxLoan - requiredLoan;
-      return { ...r, requiredLoan, affordable, monthly, loanMargin, totalNeeded };
+      const ltvMargin = ltvLimitWon - requiredLoan;
+      return { ...r, requiredLoan, affordable, monthly, loanMargin, ltvMargin, ltvOver, dsrOver, totalNeeded };
     });
-  }, [results, targetWon, targetCosts, assets, loanTermYears]);
+  }, [results, targetWon, targetCosts, assets, loanTermYears, ltvLimitWon]);
 
   return (
     <div className="layout">
@@ -325,6 +330,7 @@ function App() {
               results={results}
               best={bestResult}
               simulations={simulations}
+              ltvLimitWon={ltvLimitWon}
               targetCosts={targetCosts}
               targetWon={targetWon}
             />
@@ -441,17 +447,21 @@ interface Simulation {
   affordable: boolean;
   monthly: number;
   loanMargin: number;
+  ltvMargin: number;
+  ltvOver: boolean;
+  dsrOver: boolean;
 }
 
 interface CompareTableProps {
   results: LoanResult[];
   best: LoanResult;
   simulations: Simulation[];
+  ltvLimitWon: number;
   targetCosts: ReturnType<typeof calcAcquisitionCosts>;
   targetWon: number;
 }
 
-function CompareTable({ results, best, simulations, targetCosts, targetWon }: CompareTableProps) {
+function CompareTable({ results, best, simulations, ltvLimitWon, targetCosts, targetWon }: CompareTableProps) {
   return (
     <div className="compare__wrap">
       <table className="compare__table">
@@ -473,7 +483,11 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
                   </span>
                   {r === best && <span className="compare__col-tag">추천</span>}
                   <span className={`compare__col-status ${sim.affordable ? 'compare__col-status--ok' : 'compare__col-status--over'}`}>
-                    {sim.affordable ? '매입 가능' : `한도 초과 (−${formatKRW(Math.abs(sim.loanMargin))})`}
+                    {sim.affordable
+                      ? '매입 가능'
+                      : sim.ltvOver
+                        ? `LTV 초과 (−${formatKRW(Math.abs(sim.ltvMargin))})`
+                        : `DSR 초과 (−${formatKRW(Math.abs(sim.loanMargin))})`}
                   </span>
                 </th>
               );
@@ -512,8 +526,28 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
           <tr>
             <th scope="row">필요 대출</th>
             {simulations.map((s, i) => (
-              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+              <td
+                key={i}
+                className={[
+                  results[i] === best ? 'compare__col--best' : '',
+                  s.ltvOver || s.dsrOver ? 'compare__cell--over' : '',
+                ].filter(Boolean).join(' ')}
+              >
                 {formatKRW(s.requiredLoan)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">LTV 한도</th>
+            {results.map((_, i) => (
+              <td
+                key={i}
+                className={[
+                  results[i] === best ? 'compare__col--best' : '',
+                  simulations[i].ltvOver ? 'compare__cell--over' : '',
+                ].filter(Boolean).join(' ')}
+              >
+                {formatKRW(ltvLimitWon)}
               </td>
             ))}
           </tr>
@@ -544,16 +578,30 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
             ))}
           </tr>
           <tr>
-            <th scope="row">대출 여유</th>
+            <th scope="row">대출 여유 (DSR)</th>
             {simulations.map((s, i) => (
               <td
                 key={i}
                 className={[
                   results[i] === best ? 'compare__col--best' : '',
-                  s.affordable ? 'compare__cell--margin' : 'compare__cell--over',
+                  s.dsrOver ? 'compare__cell--over' : 'compare__cell--margin',
                 ].filter(Boolean).join(' ')}
               >
-                {s.affordable ? formatKRW(s.loanMargin) : `−${formatKRW(Math.abs(s.loanMargin))}`}
+                {s.dsrOver ? `−${formatKRW(Math.abs(s.loanMargin))}` : formatKRW(s.loanMargin)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">대출 여유 (LTV)</th>
+            {simulations.map((s, i) => (
+              <td
+                key={i}
+                className={[
+                  results[i] === best ? 'compare__col--best' : '',
+                  s.ltvOver ? 'compare__cell--over' : 'compare__cell--margin',
+                ].filter(Boolean).join(' ')}
+              >
+                {s.ltvOver ? `−${formatKRW(Math.abs(s.ltvMargin))}` : formatKRW(s.ltvMargin)}
               </td>
             ))}
           </tr>
