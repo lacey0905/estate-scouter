@@ -34,7 +34,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   loanTermYears: 30,
   ownedHomes: 0,
   isLargeArea: false,
-  targetPriceMan: 0,
+  targetPriceMan: 50000,
 };
 
 function isFiniteNumber(value: unknown): value is number {
