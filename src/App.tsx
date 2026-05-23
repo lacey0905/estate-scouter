@@ -199,11 +199,19 @@ function App() {
           <SidebarSection title="중도금 대출">
             <InputField label="중도금 금리" value={interimRate} onChange={setInterimRate} suffix="%" />
             <InputField label="이자 부담 합산 개월" value={interimTotalMonths} onChange={setInterimTotalMonths} suffix="개월" />
-            <div className="stress-result">
-              <span className="stress-result__label">후불 이자 (예시)</span>
-              <span className="stress-result__value">
-                분양가 × 1/6 × {interimRate}% × {interimTotalMonths}개월
-              </span>
+            <div className="interim-formula">
+              <span className="interim-formula__label">후불 이자 산정</span>
+              <div className="interim-formula__expr">
+                <span className="interim-formula__part">분양가 × 10%</span>
+                <span className="interim-formula__op">×</span>
+                <span className="interim-formula__part interim-formula__part--val">{interimRate}%</span>
+                <span className="interim-formula__op">×</span>
+                <span className="interim-formula__part interim-formula__part--val">{interimTotalMonths}개월</span>
+                <span className="interim-formula__op">÷ 12</span>
+              </div>
+              <div className="interim-formula__note">
+                1~2회차 무이자 · 3~6회차 후불제
+              </div>
             </div>
           </SidebarSection>
 
@@ -253,36 +261,42 @@ function App() {
       <main className="content">
         <div className="content__inner">
           <section className="dashboard">
-            <div className="dashboard__top">
-              <p className="dashboard__eyebrow">매물 가격</p>
-              <p className="dashboard__target-value">{formatKRW(targetWon)}</p>
-            </div>
-            <input
-              type="range"
-              className="dashboard__range"
-              min={0}
-              max={maxSlider}
-              step={100}
-              value={effectiveTargetMan}
-              onChange={(e) => setTargetPriceMan(Number(e.target.value))}
-            />
-            <div className="dashboard__range-labels">
-              <span>0</span>
-              <span>{formatKRW(maxSlider * 10000)}</span>
-            </div>
-            <dl className="dashboard__kpis">
-              <div className="dashboard__kpi dashboard__kpi--accent">
-                <dt>필요 총액</dt>
-                <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
+            <div className="dashboard__price-panel">
+              <div className="dashboard__price-header">
+                <p className="dashboard__eyebrow">매물 가격</p>
+                <p className="dashboard__target-value">{formatKRW(targetWon)}</p>
               </div>
-              <div className="dashboard__kpi">
-                <dt>자기자본</dt>
-                <dd>{formatKRW(assets * 10000)}</dd>
+              <input
+                type="range"
+                className="dashboard__range"
+                min={0}
+                max={maxSlider}
+                step={100}
+                value={effectiveTargetMan}
+                onChange={(e) => setTargetPriceMan(Number(e.target.value))}
+              />
+              <div className="dashboard__range-labels">
+                <span>0</span>
+                <span>{formatKRW(maxSlider * 10000)}</span>
               </div>
-            </dl>
 
-            <div className="dashboard__cost-breakdown">
-              <p className="dashboard__cost-title">부대비용 합계 <strong>{formatKRW(targetCosts.total)}</strong></p>
+              <dl className="dashboard__kpis">
+                <div className="dashboard__kpi dashboard__kpi--accent">
+                  <dt>필요 총액</dt>
+                  <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
+                </div>
+                <div className="dashboard__kpi">
+                  <dt>자기자본</dt>
+                  <dd>{formatKRW(assets * 10000)}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="dashboard__cost-panel">
+              <div className="dashboard__cost-header">
+                <span className="dashboard__cost-label">부대비용</span>
+                <span className="dashboard__cost-total">{formatKRW(targetCosts.total)}</span>
+              </div>
               <ul className="dashboard__cost-list">
                 <li><span>취득세</span><span>{formatKRW(targetCosts.acquisitionTax)}</span></li>
                 <li><span>지방교육세</span><span>{formatKRW(targetCosts.localEducationTax)}</span></li>
@@ -292,7 +306,10 @@ function App() {
                 <li><span>중개수수료</span><span>{formatKRW(targetCosts.brokerageFee)}</span></li>
                 <li><span>기타 (법무사·인지세·채권)</span><span>{formatKRW(targetCosts.otherCosts)}</span></li>
                 {targetCosts.interimInterest > 0 && (
-                  <li><span>중도금 이자 (후불)</span><span>{formatKRW(targetCosts.interimInterest)}</span></li>
+                  <li className="dashboard__cost-item--highlight">
+                    <span>중도금 이자 (후불)</span>
+                    <span>{formatKRW(targetCosts.interimInterest)}</span>
+                  </li>
                 )}
               </ul>
             </div>
