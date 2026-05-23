@@ -200,18 +200,10 @@ function App() {
             <InputField label="중도금 금리" value={interimRate} onChange={setInterimRate} suffix="%" />
             <InputField label="이자 부담 합산 개월" value={interimTotalMonths} onChange={setInterimTotalMonths} suffix="개월" />
             <div className="interim-formula">
-              <span className="interim-formula__label">후불 이자 산정</span>
-              <div className="interim-formula__expr">
-                <span className="interim-formula__part">분양가 × 10%</span>
-                <span className="interim-formula__op">×</span>
-                <span className="interim-formula__part interim-formula__part--val">{interimRate}%</span>
-                <span className="interim-formula__op">×</span>
-                <span className="interim-formula__part interim-formula__part--val">{interimTotalMonths}개월</span>
-                <span className="interim-formula__op">÷ 12</span>
-              </div>
-              <div className="interim-formula__note">
-                1~2회차 무이자 · 3~6회차 후불제
-              </div>
+              <span className="interim-formula__label">산정식 <em>1~2회차 무이자 · 3~6회차 후불</em></span>
+              <code className="interim-formula__expr">
+                분양가×10% × <b>{interimRate}%</b> × <b>{interimTotalMonths}</b>월 ÷ 12
+              </code>
             </div>
           </SidebarSection>
 
