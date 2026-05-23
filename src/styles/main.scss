@@ -457,17 +457,20 @@ button {
 
   &__price-panel {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   &__price-header {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
 
   &__eyebrow {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: $color-text-muted;
     letter-spacing: 0.06em;
@@ -475,7 +478,7 @@ button {
   }
 
   &__target-value {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-size: clamp(2rem, 4vw, 2.75rem);
     font-weight: 800;
     font-family: $font-mono;
     color: $color-primary-hover;
@@ -485,10 +488,10 @@ button {
 
   &__range {
     width: 100%;
-    height: 6px;
+    height: 8px;
     appearance: none;
     background: $color-surface-inset;
-    border-radius: 3px;
+    border-radius: 4px;
     outline: none;
     cursor: pointer;
 
@@ -528,8 +531,8 @@ button {
   &__range-labels {
     display: flex;
     justify-content: space-between;
-    margin-top: 6px;
-    margin-bottom: 20px;
+    margin-top: 8px;
+    margin-bottom: 24px;
     font-size: 0.6875rem;
     color: $color-text-dim;
     font-family: $font-mono;
@@ -538,26 +541,26 @@ button {
   &__kpis {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 14px;
   }
 
   &__kpi {
-    padding: 12px 14px;
+    padding: 14px 16px;
     background: $color-surface-inset;
     border: 1px solid $color-border;
     border-radius: $radius-sm;
 
     dt {
-      font-size: 0.625rem;
+      font-size: 0.6875rem;
       font-weight: 600;
       color: $color-text-dim;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     dd {
-      font-size: 1.0625rem;
+      font-size: 1.125rem;
       font-weight: 700;
       font-family: $font-mono;
       color: $color-text;
