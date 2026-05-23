@@ -31,6 +31,7 @@ function App() {
     setLoanTermYears,
     setOwnedHomes,
     setIsLargeArea,
+    setLtv,
     setTargetPriceMan,
     setInterimRate,
     setInterimTotalMonths,
@@ -49,6 +50,7 @@ function App() {
     loanTermYears,
     ownedHomes,
     isLargeArea,
+    ltv,
     targetPriceMan,
     interimRate,
     interimTotalMonths,
@@ -72,8 +74,9 @@ function App() {
       isLargeArea,
       interimRate,
       interimTotalMonths,
+      ltv,
     );
-  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea, interimRate, interimTotalMonths]);
+  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltv]);
 
   const bestResult = useMemo(() => {
     return results.reduce((best, r) =>
@@ -186,6 +189,14 @@ function App() {
           </SidebarSection>
 
           <SidebarSection title="대출">
+            <InputField
+              label="LTV"
+              value={ltv}
+              onChange={setLtv}
+              suffix="%"
+              min={0}
+              max={100}
+            />
             <InputField
               label="상환 기간"
               value={loanTermYears}
