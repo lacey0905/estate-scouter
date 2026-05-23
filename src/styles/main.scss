@@ -400,81 +400,155 @@ button {
   }
 }
 
-// ─── Hero summary ────────────────────────────────────
+// ─── Dashboard (limit + target unified) ─────────────
 
-.hero {
-  padding: 32px 36px 28px;
+.dashboard {
   margin-bottom: 24px;
   background: $color-surface;
   border: 1px solid $color-border;
   border-radius: $radius-xl;
   box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  &__limit,
+  &__target {
+    padding: 28px 32px 24px;
+  }
+
+  &__limit {
+    border-right: 1px solid $color-border;
+  }
 
   &__eyebrow {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     color: $color-text-muted;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     margin-bottom: 8px;
   }
 
   &__amount {
-    font-size: clamp(2.25rem, 5vw, 3.25rem);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
     font-weight: 800;
     font-family: $font-mono;
     color: $color-primary-hover;
     letter-spacing: -0.04em;
     line-height: 1.1;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
-  &__sub {
+  &__target-value {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    font-family: $font-mono;
+    color: $color-text;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  &__meta {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px 12px;
-    font-size: 0.8125rem;
-    color: $color-text-muted;
-    margin-bottom: 28px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid $color-border;
+    gap: 6px 10px;
+    font-size: 0.75rem;
+    color: $color-text-dim;
+    margin-bottom: 20px;
   }
 
   &__badge {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 3px 10px;
     background: $color-primary-muted;
     color: $color-primary-hover;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     border-radius: 999px;
     border: 1px solid $color-best-border;
   }
 
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+  &__range {
+    width: 100%;
+    height: 6px;
+    appearance: none;
+    background: $color-surface-inset;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: $color-primary;
+      border: 3px solid $color-surface;
+      box-shadow: 0 0 0 2px $color-primary-ring, $shadow-sm;
+      cursor: grab;
+      transition: transform $transition-fast;
+
+      &:active {
+        cursor: grabbing;
+        transform: scale(1.15);
+      }
+    }
+
+    &::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: $color-primary;
+      border: 3px solid $color-surface;
+      box-shadow: 0 0 0 2px $color-primary-ring, $shadow-sm;
+      cursor: grab;
+
+      &:active {
+        cursor: grabbing;
+        transform: scale(1.15);
+      }
+    }
   }
 
-  &__stat {
-    padding: 16px 20px;
+  &__range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    font-size: 0.625rem;
+    color: $color-text-dim;
+    font-family: $font-mono;
+  }
+
+  &__kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  &__kpi {
+    padding: 12px 14px;
     background: $color-surface-inset;
     border: 1px solid $color-border;
-    border-radius: $radius-md;
+    border-radius: $radius-sm;
 
     dt {
-      font-size: 0.6875rem;
+      font-size: 0.625rem;
       font-weight: 600;
       color: $color-text-dim;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
     }
 
     dd {
-      font-size: 1.25rem;
+      font-size: 1.0625rem;
       font-weight: 700;
       font-family: $font-mono;
       color: $color-text;
@@ -495,99 +569,13 @@ button {
 // ─── Compare table ─────────────────────────────────────
 
 .compare {
-  &__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 16px;
-  }
-
   &__title {
     font-size: 0.8125rem;
     font-weight: 700;
     color: $color-text-muted;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    white-space: nowrap;
-    padding-top: 6px;
-  }
-
-  &__slider {
-    flex: 1;
-    max-width: 480px;
-  }
-
-  &__slider-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
-  }
-
-  &__slider-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: $color-text-muted;
-  }
-
-  &__slider-value {
-    font-size: 1.125rem;
-    font-weight: 800;
-    font-family: $font-mono;
-    color: $color-primary-hover;
-    letter-spacing: -0.03em;
-  }
-
-  &__range {
-    width: 100%;
-    height: 6px;
-    appearance: none;
-    background: $color-surface-inset;
-    border-radius: 3px;
-    outline: none;
-    cursor: pointer;
-
-    &::-webkit-slider-thumb {
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: $color-primary;
-      border: 3px solid $color-surface;
-      box-shadow: 0 0 0 2px $color-primary-ring, $shadow-sm;
-      cursor: grab;
-      transition: transform $transition-fast;
-
-      &:active {
-        cursor: grabbing;
-        transform: scale(1.15);
-      }
-    }
-
-    &::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: $color-primary;
-      border: 3px solid $color-surface;
-      box-shadow: 0 0 0 2px $color-primary-ring, $shadow-sm;
-      cursor: grab;
-
-      &:active {
-        cursor: grabbing;
-        transform: scale(1.15);
-      }
-    }
-  }
-
-  &__range-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6px;
-    font-size: 0.625rem;
-    color: $color-text-dim;
-    font-family: $font-mono;
+    margin-bottom: 12px;
   }
 
   &__wrap {
@@ -743,20 +731,27 @@ button {
 // ─── Responsive ──────────────────────────────────────
 
 @media (max-width: $bp-wide) {
-  .hero__stats {
+  .dashboard__grid {
     grid-template-columns: 1fr;
   }
 
-  .hero__stat dd {
-    font-size: 1.125rem;
+  .dashboard__limit {
+    border-right: none !important;
+    border-bottom: 1px solid $color-border;
   }
 
-  .compare__header {
-    flex-direction: column;
+  .dashboard__grid {
+    grid-template-columns: 1fr;
   }
 
-  .compare__slider {
-    max-width: 100%;
+  .dashboard__limit {
+    border-right: none !important;
+    border-bottom: 1px solid $color-border;
+  }
+
+  .dashboard__limit,
+  .dashboard__target {
+    padding: 20px 16px 18px;
   }
 }
 
