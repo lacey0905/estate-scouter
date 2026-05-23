@@ -470,7 +470,7 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
                   </span>
                   {r === best && <span className="compare__col-tag">추천</span>}
                   <span className={`compare__col-status ${sim.affordable ? 'compare__col-status--ok' : 'compare__col-status--over'}`}>
-                    {sim.affordable ? '매입 가능' : '한도 초과'}
+                    {sim.affordable ? '매입 가능' : `한도 초과 (−${formatKRW(Math.abs(sim.loanMargin))})`}
                   </span>
                 </th>
               );
@@ -550,7 +550,7 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
                   s.affordable ? 'compare__cell--margin' : 'compare__cell--over',
                 ].filter(Boolean).join(' ')}
               >
-                {s.affordable ? formatKRW(s.loanMargin) : '초과'}
+                {s.affordable ? formatKRW(s.loanMargin) : `−${formatKRW(Math.abs(s.loanMargin))}`}
               </td>
             ))}
           </tr>
