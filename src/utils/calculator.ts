@@ -70,6 +70,8 @@ export function calculateLoanScenario(
   label: string,
   ownedHomes: OwnedHomes,
   isLargeArea: boolean,
+  interimRate = 0,
+  interimTotalMonths = 0,
 ): LoanResult {
   const { annualIncome, assets, interestRate, loanTermYears, dsrLimit, stressDsrRate } = input;
 
@@ -94,6 +96,8 @@ export function calculateLoanScenario(
     stressMaxPropertyPrice,
     ownedHomes,
     isLargeArea,
+    interimRate,
+    interimTotalMonths,
   );
 
   return {
@@ -124,6 +128,8 @@ export function runAllScenarios(
   loanTermYears: number,
   ownedHomes: OwnedHomes,
   isLargeArea: boolean,
+  interimRate = 0,
+  interimTotalMonths = 0,
 ): LoanResult[] {
   const results: LoanResult[] = [];
 
@@ -133,7 +139,7 @@ export function runAllScenarios(
     loanTermYears,
     dsrLimit: 40,
     stressDsrRate: stressRate,
-  }, '1금융 주담대', ownedHomes, isLargeArea));
+  }, '1금융 주담대', ownedHomes, isLargeArea, interimRate, interimTotalMonths));
 
   results.push(calculateLoanScenario({
     annualIncome, assets,
@@ -141,7 +147,7 @@ export function runAllScenarios(
     loanTermYears,
     dsrLimit: 50,
     stressDsrRate: stressRate,
-  }, '2금융 주담대', ownedHomes, isLargeArea));
+  }, '2금융 주담대', ownedHomes, isLargeArea, interimRate, interimTotalMonths));
 
   results.push(calculateLoanScenario({
     annualIncome, assets,
@@ -149,7 +155,7 @@ export function runAllScenarios(
     loanTermYears: 30,
     dsrLimit: 40,
     stressDsrRate: 0,
-  }, '1금융 순수고정 30년', ownedHomes, isLargeArea));
+  }, '1금융 순수고정 30년', ownedHomes, isLargeArea, interimRate, interimTotalMonths));
 
   return results;
 }

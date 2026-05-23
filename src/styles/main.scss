@@ -523,6 +523,22 @@ button {
         color: $color-warning;
       }
     }
+
+    &--sub {
+      padding: 6px 14px;
+      background: transparent;
+      border: none;
+
+      dt {
+        font-size: 0.5625rem;
+        color: $color-text-dim;
+      }
+
+      dd {
+        font-size: 0.875rem;
+        color: $color-text-muted;
+      }
+    }
   }
 }
 

@@ -6,6 +6,7 @@ export interface AcquisitionCostBreakdown {
   ruralSpecialTax: number;
   brokerageFee: number;
   otherCosts: number;
+  interimInterest: number;
   total: number;
 }
 
@@ -52,13 +53,30 @@ function getBrokerageFee(price: number): number {
   return fee;
 }
 
+/**
+ * 중도금 대출 후불 이자 계산
+ * 분양가의 60%를 6회차로 나누어 실행, 이자 부담 회차들의 남은 기간 합산으로 계산
+ * interimInterest = price × (1/6) × (rate/100) × (totalMonths / 12)
+ */
+export function calcInterimInterest(
+  price: number,
+  interimRate: number,
+  interimTotalMonths: number,
+): number {
+  if (price <= 0 || interimRate <= 0 || interimTotalMonths <= 0) return 0;
+  const perInstallment = price / 6;
+  return Math.floor(perInstallment * (interimRate / 100) * (interimTotalMonths / 12));
+}
+
 export function calcAcquisitionCosts(
   price: number,
   ownedHomes: OwnedHomes,
   isLargeArea: boolean,
+  interimRate = 0,
+  interimTotalMonths = 0,
 ): AcquisitionCostBreakdown {
   if (price <= 0) {
-    return { acquisitionTax: 0, localEducationTax: 0, ruralSpecialTax: 0, brokerageFee: 0, otherCosts: 0, total: 0 };
+    return { acquisitionTax: 0, localEducationTax: 0, ruralSpecialTax: 0, brokerageFee: 0, otherCosts: 0, interimInterest: 0, total: 0 };
   }
 
   const taxRate = getAcquisitionTaxRate(price, ownedHomes);
@@ -68,13 +86,14 @@ export function calcAcquisitionCosts(
 
   const brokerageFee = Math.floor(getBrokerageFee(price));
 
-  // 법무사(~50만) + 인지세(~15만) + 국민주택채권 할인(~0.1%) + 기타
   const bondDiscount = Math.floor(price * 0.001);
   const otherCosts = 500000 + 150000 + bondDiscount;
 
-  const total = acquisitionTax + localEducationTax + ruralSpecialTax + brokerageFee + otherCosts;
+  const interimInterest = calcInterimInterest(price, interimRate, interimTotalMonths);
 
-  return { acquisitionTax, localEducationTax, ruralSpecialTax, brokerageFee, otherCosts, total };
+  const total = acquisitionTax + localEducationTax + ruralSpecialTax + brokerageFee + otherCosts + interimInterest;
+
+  return { acquisitionTax, localEducationTax, ruralSpecialTax, brokerageFee, otherCosts, interimInterest, total };
 }
 
 /**
@@ -86,24 +105,26 @@ export function calcAdjustedPropertyPrice(
   totalBudget: number,
   ownedHomes: OwnedHomes,
   isLargeArea: boolean,
+  interimRate = 0,
+  interimTotalMonths = 0,
 ): { adjustedPrice: number; costs: AcquisitionCostBreakdown } {
   if (totalBudget <= 0) {
-    const zeroCosts = calcAcquisitionCosts(0, ownedHomes, isLargeArea);
+    const zeroCosts = calcAcquisitionCosts(0, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
     return { adjustedPrice: 0, costs: zeroCosts };
   }
 
   let price = totalBudget;
-  let costs = calcAcquisitionCosts(price, ownedHomes, isLargeArea);
+  let costs = calcAcquisitionCosts(price, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
 
   for (let i = 0; i < 20; i++) {
     const newPrice = totalBudget - costs.total;
     if (Math.abs(newPrice - price) < 100) {
       price = newPrice;
-      costs = calcAcquisitionCosts(price, ownedHomes, isLargeArea);
+      costs = calcAcquisitionCosts(price, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
       break;
     }
     price = newPrice;
-    costs = calcAcquisitionCosts(price, ownedHomes, isLargeArea);
+    costs = calcAcquisitionCosts(price, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
   }
 
   return { adjustedPrice: Math.max(0, Math.floor(price)), costs };

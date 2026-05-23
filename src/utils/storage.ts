@@ -17,6 +17,8 @@ export interface AppSettings {
   ownedHomes: OwnedHomes;
   isLargeArea: boolean;
   targetPriceMan: number;
+  interimRate: number;
+  interimTotalMonths: number;
 }
 
 export const STORAGE_KEY = 'estate-scouter:settings';
@@ -35,6 +37,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ownedHomes: 0,
   isLargeArea: false,
   targetPriceMan: 50000,
+  interimRate: 3.95,
+  interimTotalMonths: 78,
 };
 
 function isFiniteNumber(value: unknown): value is number {
@@ -80,6 +84,8 @@ export function normalizeSettings(raw: unknown): AppSettings {
     ownedHomes: pickOwnedHomes(data.ownedHomes, DEFAULT_SETTINGS.ownedHomes),
     isLargeArea: pickBoolean(data.isLargeArea, DEFAULT_SETTINGS.isLargeArea),
     targetPriceMan: Math.max(0, pickNumber(data.targetPriceMan, DEFAULT_SETTINGS.targetPriceMan)),
+    interimRate: pickNumber(data.interimRate, DEFAULT_SETTINGS.interimRate),
+    interimTotalMonths: Math.max(0, pickNumber(data.interimTotalMonths, DEFAULT_SETTINGS.interimTotalMonths)),
   };
 }
 

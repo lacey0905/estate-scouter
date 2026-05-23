@@ -32,6 +32,8 @@ function App() {
     setOwnedHomes,
     setIsLargeArea,
     setTargetPriceMan,
+    setInterimRate,
+    setInterimTotalMonths,
   } = useAppSettings();
 
   const {
@@ -48,6 +50,8 @@ function App() {
     ownedHomes,
     isLargeArea,
     targetPriceMan,
+    interimRate,
+    interimTotalMonths,
   } = settings;
 
   const stressRate = calcStressRate(stressBase, loanRateType);
@@ -66,8 +70,10 @@ function App() {
       loanTermYears,
       ownedHomes,
       isLargeArea,
+      interimRate,
+      interimTotalMonths,
     );
-  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea]);
+  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea, interimRate, interimTotalMonths]);
 
   const bestResult = useMemo(() => {
     return results.reduce((best, r) =>
@@ -80,8 +86,8 @@ function App() {
   const targetWon = effectiveTargetMan * 10000;
 
   const targetCosts = useMemo(() => {
-    return calcAcquisitionCosts(targetWon, ownedHomes, isLargeArea);
-  }, [targetWon, ownedHomes, isLargeArea]);
+    return calcAcquisitionCosts(targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
+  }, [targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths]);
 
   const simulations = useMemo(() => {
     return results.map((r) => {
@@ -190,6 +196,17 @@ function App() {
             />
           </SidebarSection>
 
+          <SidebarSection title="중도금 대출">
+            <InputField label="중도금 금리" value={interimRate} onChange={setInterimRate} suffix="%" />
+            <InputField label="이자 부담 합산 개월" value={interimTotalMonths} onChange={setInterimTotalMonths} suffix="개월" />
+            <div className="stress-result">
+              <span className="stress-result__label">후불 이자 (예시)</span>
+              <span className="stress-result__value">
+                분양가 × 1/6 × {interimRate}% × {interimTotalMonths}개월
+              </span>
+            </div>
+          </SidebarSection>
+
           <SidebarSection title="매매 조건">
             <div className="field">
               <span className="field__label">보유 주택 수</span>
@@ -258,6 +275,12 @@ function App() {
                 <dt>부대비용</dt>
                 <dd>{formatKRW(targetCosts.total)}</dd>
               </div>
+              {targetCosts.interimInterest > 0 && (
+                <div className="dashboard__kpi dashboard__kpi--sub">
+                  <dt>└ 중도금 이자</dt>
+                  <dd>{formatKRW(targetCosts.interimInterest)}</dd>
+                </div>
+              )}
               <div className="dashboard__kpi dashboard__kpi--accent">
                 <dt>필요 총액</dt>
                 <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
@@ -398,7 +421,7 @@ interface CompareTableProps {
   results: LoanResult[];
   best: LoanResult;
   simulations: Simulation[];
-  targetCosts: { total: number };
+  targetCosts: { total: number; interimInterest: number };
   targetWon: number;
 }
 
@@ -476,6 +499,16 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
               </td>
             ))}
           </tr>
+          {targetCosts.interimInterest > 0 && (
+            <tr className="compare__row--cost">
+              <th scope="row">└ 중도금 이자</th>
+              {results.map((_, i) => (
+                <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                  <span className="compare__cost-val">−{formatKRW(targetCosts.interimInterest)}</span>
+                </td>
+              ))}
+            </tr>
+          )}
           <tr>
             <th scope="row">월 상환액</th>
             {simulations.map((s, i) => (
