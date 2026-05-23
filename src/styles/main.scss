@@ -1,4 +1,4 @@
-@use 'variables' as *;
+@use "variables" as *;
 
 *,
 *::before,
@@ -154,7 +154,9 @@ button {
     color: $color-text-muted;
     font-size: 0.8125rem;
     font-weight: 500;
-    transition: background $transition-fast, color $transition-fast;
+    transition:
+      background $transition-fast,
+      color $transition-fast;
 
     &:hover:not(&--active) {
       color: $color-text-secondary;
@@ -205,7 +207,9 @@ button {
     border: 1px solid $color-border;
     border-radius: $radius-sm;
     overflow: hidden;
-    transition: border-color $transition-base, box-shadow $transition-base;
+    transition:
+      border-color $transition-base,
+      box-shadow $transition-base;
 
     &:focus-within {
       border-color: $color-primary;
@@ -266,7 +270,9 @@ button {
   outline: none;
   appearance: none;
   cursor: pointer;
-  transition: border-color $transition-base, box-shadow $transition-base;
+  transition:
+    border-color $transition-base,
+    box-shadow $transition-base;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -466,7 +472,7 @@ button {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 32px;
   }
 
   &__eyebrow {
@@ -502,7 +508,9 @@ button {
       border-radius: 50%;
       background: $color-primary;
       border: 3px solid $color-surface;
-      box-shadow: 0 0 0 2px $color-primary-ring, $shadow-sm;
+      box-shadow:
+        0 0 0 2px $color-primary-ring,
+        $shadow-sm;
       cursor: grab;
       transition: transform $transition-fast;
 
@@ -518,7 +526,9 @@ button {
       border-radius: 50%;
       background: $color-primary;
       border: 3px solid $color-surface;
-      box-shadow: 0 0 0 2px $color-primary-ring, $shadow-sm;
+      box-shadow:
+        0 0 0 2px $color-primary-ring,
+        $shadow-sm;
       cursor: grab;
 
       &:active {
@@ -699,7 +709,7 @@ button {
       border-bottom: none;
     }
 
-    tbody th[scope='row'] {
+    tbody th[scope="row"] {
       text-align: left;
       font-size: 0.8125rem;
       font-weight: 600;
@@ -756,7 +766,7 @@ button {
   }
 
   &__row--main {
-    th[scope='row'] {
+    th[scope="row"] {
       color: $color-text;
       font-size: 0.875rem;
     }
