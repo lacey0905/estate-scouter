@@ -579,7 +579,8 @@ button {
     background: $color-surface-inset;
     border: 1px solid $color-border;
     border-radius: $radius-md;
-    align-self: start;
+    display: flex;
+    flex-direction: column;
   }
 
   &__cost-header {
@@ -610,8 +611,10 @@ button {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex: 1;
 
     li {
       display: flex;
