@@ -55,8 +55,9 @@ function getBrokerageFee(price: number): number {
 
 /**
  * 중도금 대출 후불 이자 계산
- * 분양가의 60%를 6회차로 나누어 실행, 이자 부담 회차들의 남은 기간 합산으로 계산
- * interimInterest = price × (1/6) × (rate/100) × (totalMonths / 12)
+ * 분양가의 60%를 6회차로 분할 실행 → 각 회차 융자금 = 분양가 × 10%
+ * 1~2회차 무이자, 3~6회차 이자 후불제
+ * interimInterest = (분양가 × 10%) × (rate/100) × (이자부담 합산개월 / 12)
  */
 export function calcInterimInterest(
   price: number,
@@ -64,7 +65,7 @@ export function calcInterimInterest(
   interimTotalMonths: number,
 ): number {
   if (price <= 0 || interimRate <= 0 || interimTotalMonths <= 0) return 0;
-  const perInstallment = price / 6;
+  const perInstallment = price * 0.1;
   return Math.floor(perInstallment * (interimRate / 100) * (interimTotalMonths / 12));
 }
 
