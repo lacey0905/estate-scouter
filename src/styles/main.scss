@@ -400,6 +400,16 @@ button {
   }
 }
 
+// ─── Top grid (hero + sim side-by-side) ─────────────
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
 // ─── Hero summary ────────────────────────────────────
 
 .hero {
@@ -408,7 +418,6 @@ button {
   border: 1px solid $color-border;
   border-radius: $radius-xl;
   box-shadow: $shadow-sm;
-  margin-bottom: 24px;
 
   &__eyebrow {
     font-size: 0.75rem;
@@ -495,8 +504,6 @@ button {
 // ─── Simulation section ─────────────────────────────
 
 .sim {
-  margin-bottom: 28px;
-
   &__title {
     font-size: 0.8125rem;
     font-weight: 700;
@@ -620,9 +627,8 @@ button {
   }
 
   &__cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
+    display: flex;
+    flex-direction: column;
     border-left: 1px solid $color-border;
     border-right: 1px solid $color-border;
     border-bottom: 1px solid $color-border;
@@ -631,12 +637,12 @@ button {
   }
 
   &__card {
-    padding: 20px;
+    padding: 16px 20px;
     background: $color-surface;
     transition: background $transition-fast;
 
     &:not(:last-child) {
-      border-right: 1px solid $color-border;
+      border-bottom: 1px solid $color-border;
     }
 
     &--ok {
@@ -660,23 +666,21 @@ button {
 
   &__card-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid $color-border;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
   &__card-name {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     color: $color-text;
   }
 
   &__card-badge {
     display: inline-block;
-    padding: 3px 10px;
-    font-size: 0.6875rem;
+    padding: 2px 8px;
+    font-size: 0.625rem;
     font-weight: 700;
     border-radius: 999px;
     background: $color-success-bg;
@@ -692,15 +696,15 @@ button {
 
   &__card-body {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 4px 16px;
   }
 
   &__card-row {
     display: flex;
-    justify-content: space-between;
+    gap: 6px;
     align-items: center;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: $color-text-muted;
 
     span:last-child {
@@ -850,13 +854,8 @@ button {
     font-size: 1.125rem;
   }
 
-  .sim__cards {
+  .top-grid {
     grid-template-columns: 1fr;
-  }
-
-  .sim__card:not(:last-child) {
-    border-right: none !important;
-    border-bottom: 1px solid $color-border;
   }
 
   .sim__cost-bar {

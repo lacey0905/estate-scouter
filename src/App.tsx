@@ -235,100 +235,102 @@ function App() {
 
       <main className="content">
         <div className="content__inner">
-          <section className="hero" aria-labelledby="hero-title">
-            <p className="hero__eyebrow" id="hero-title">실 매입 가능 한도 (부대비용 차감)</p>
-            <p className="hero__amount">{formatKRW(bestResult.adjustedPrice)}</p>
-            <p className="hero__sub">
-              <span className="hero__badge">{bestResult.label}</span>
-              스트레스 DSR {bestResult.effectiveRate.toFixed(2)}% · {incomeYear}년 소득 {formatKRW(annualIncome * 10000)}
-            </p>
+          <div className="top-grid">
+            <section className="hero" aria-labelledby="hero-title">
+              <p className="hero__eyebrow" id="hero-title">실 매입 가능 한도</p>
+              <p className="hero__amount">{formatKRW(bestResult.adjustedPrice)}</p>
+              <p className="hero__sub">
+                <span className="hero__badge">{bestResult.label}</span>
+                스트레스 DSR {bestResult.effectiveRate.toFixed(2)}%
+              </p>
 
-            <dl className="hero__stats">
-              <div className="hero__stat">
-                <dt>최대 대출</dt>
-                <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
-              </div>
-              <div className="hero__stat">
-                <dt>부대비용</dt>
-                <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
-              </div>
-              <div className="hero__stat hero__stat--accent">
-                <dt>월 상환액</dt>
-                <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="sim" aria-labelledby="sim-title">
-            <h2 className="sim__title" id="sim-title">매물 시뮬레이션</h2>
-
-            <div className="sim__slider-area">
-              <div className="sim__price-display">
-                <span className="sim__price-label">매물 가격</span>
-                <span className="sim__price-value">{formatKRW(targetWon)}</span>
-              </div>
-              <input
-                type="range"
-                className="sim__range"
-                min={0}
-                max={maxSlider}
-                step={100}
-                value={effectiveTargetMan}
-                onChange={(e) => setTargetPriceMan(Number(e.target.value))}
-              />
-              <div className="sim__range-labels">
-                <span>0</span>
-                <span>한도 {formatKRW(bestResult.adjustedPrice)}</span>
-              </div>
-            </div>
-
-            <div className="sim__cost-bar">
-              <div className="sim__cost-item">
-                <span>부대비용</span>
-                <span>{formatKRW(targetCosts.total)}</span>
-              </div>
-              <div className="sim__cost-item">
-                <span>필요 총액</span>
-                <strong>{formatKRW(targetWon + targetCosts.total)}</strong>
-              </div>
-            </div>
-
-            <div className="sim__cards">
-              {simulations.map((s, i) => (
-                <div
-                  key={i}
-                  className={`sim__card ${s.affordable ? 'sim__card--ok' : 'sim__card--over'}`}
-                >
-                  <div className="sim__card-header">
-                    <span className="sim__card-name">{s.label}</span>
-                    <span className={`sim__card-badge ${s.affordable ? '' : 'sim__card-badge--over'}`}>
-                      {s.affordable ? '가능' : '한도 초과'}
-                    </span>
-                  </div>
-                  <div className="sim__card-body">
-                    <div className="sim__card-row">
-                      <span>필요 대출</span>
-                      <span>{formatKRW(s.requiredLoan)}</span>
-                    </div>
-                    <div className="sim__card-row">
-                      <span>대출 한도</span>
-                      <span>{formatKRW(s.stressMaxLoanAmount)}</span>
-                    </div>
-                    <div className="sim__card-row sim__card-row--highlight">
-                      <span>월 상환액</span>
-                      <span>{formatKRW(s.monthly)}</span>
-                    </div>
-                    {s.affordable && (
-                      <div className="sim__card-row sim__card-row--margin">
-                        <span>대출 여유</span>
-                        <span>{formatKRW(s.loanMargin)}</span>
-                      </div>
-                    )}
-                  </div>
+              <dl className="hero__stats">
+                <div className="hero__stat">
+                  <dt>최대 대출</dt>
+                  <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
                 </div>
-              ))}
-            </div>
-          </section>
+                <div className="hero__stat">
+                  <dt>부대비용</dt>
+                  <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
+                </div>
+                <div className="hero__stat hero__stat--accent">
+                  <dt>월 상환액</dt>
+                  <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="sim" aria-labelledby="sim-title">
+              <h2 className="sim__title" id="sim-title">매물 시뮬레이션</h2>
+
+              <div className="sim__slider-area">
+                <div className="sim__price-display">
+                  <span className="sim__price-label">매물 가격</span>
+                  <span className="sim__price-value">{formatKRW(targetWon)}</span>
+                </div>
+                <input
+                  type="range"
+                  className="sim__range"
+                  min={0}
+                  max={maxSlider}
+                  step={100}
+                  value={effectiveTargetMan}
+                  onChange={(e) => setTargetPriceMan(Number(e.target.value))}
+                />
+                <div className="sim__range-labels">
+                  <span>0</span>
+                  <span>한도 {formatKRW(bestResult.adjustedPrice)}</span>
+                </div>
+              </div>
+
+              <div className="sim__cost-bar">
+                <div className="sim__cost-item">
+                  <span>부대비용</span>
+                  <span>{formatKRW(targetCosts.total)}</span>
+                </div>
+                <div className="sim__cost-item">
+                  <span>필요 총액</span>
+                  <strong>{formatKRW(targetWon + targetCosts.total)}</strong>
+                </div>
+              </div>
+
+              <div className="sim__cards">
+                {simulations.map((s, i) => (
+                  <div
+                    key={i}
+                    className={`sim__card ${s.affordable ? 'sim__card--ok' : 'sim__card--over'}`}
+                  >
+                    <div className="sim__card-header">
+                      <span className="sim__card-name">{s.label}</span>
+                      <span className={`sim__card-badge ${s.affordable ? '' : 'sim__card-badge--over'}`}>
+                        {s.affordable ? '가능' : '초과'}
+                      </span>
+                    </div>
+                    <div className="sim__card-body">
+                      <div className="sim__card-row">
+                        <span>필요 대출</span>
+                        <span>{formatKRW(s.requiredLoan)}</span>
+                      </div>
+                      <div className="sim__card-row">
+                        <span>대출 한도</span>
+                        <span>{formatKRW(s.stressMaxLoanAmount)}</span>
+                      </div>
+                      <div className="sim__card-row sim__card-row--highlight">
+                        <span>월 상환액</span>
+                        <span>{formatKRW(s.monthly)}</span>
+                      </div>
+                      {s.affordable && (
+                        <div className="sim__card-row sim__card-row--margin">
+                          <span>대출 여유</span>
+                          <span>{formatKRW(s.loanMargin)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
 
           <section className="compare" aria-labelledby="compare-title">
             <h2 className="compare__title" id="compare-title">시나리오 한눈에 비교</h2>
