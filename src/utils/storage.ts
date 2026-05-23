@@ -18,6 +18,7 @@ export interface AppSettings {
   isLargeArea: boolean;
   targetPriceMan: number;
   ltv: number;
+  appraisalRate: number;
   interimRate: number;
   interimTotalMonths: number;
 }
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   isLargeArea: false,
   targetPriceMan: 50000,
   ltv: 70,
+  appraisalRate: 100,
   interimRate: 3.95,
   interimTotalMonths: 78,
 };
@@ -87,6 +89,7 @@ export function normalizeSettings(raw: unknown): AppSettings {
     isLargeArea: pickBoolean(data.isLargeArea, DEFAULT_SETTINGS.isLargeArea),
     targetPriceMan: Math.max(0, pickNumber(data.targetPriceMan, DEFAULT_SETTINGS.targetPriceMan)),
     ltv: Math.min(100, Math.max(0, pickNumber(data.ltv, DEFAULT_SETTINGS.ltv))),
+    appraisalRate: Math.max(100, pickNumber(data.appraisalRate, DEFAULT_SETTINGS.appraisalRate)),
     interimRate: pickNumber(data.interimRate, DEFAULT_SETTINGS.interimRate),
     interimTotalMonths: Math.max(0, pickNumber(data.interimTotalMonths, DEFAULT_SETTINGS.interimTotalMonths)),
   };

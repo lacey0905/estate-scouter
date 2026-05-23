@@ -34,6 +34,7 @@ export function useAppSettings() {
     setOwnedHomes: (v: OwnedHomes) => patch('ownedHomes', v),
     setIsLargeArea: (v: boolean) => patch('isLargeArea', v),
     setLtv: (v: number) => patch('ltv', v),
+    setAppraisalRate: (v: number) => patch('appraisalRate', v),
     setTargetPriceMan: (v: number) => patch('targetPriceMan', v),
     setInterimRate: (v: number) => patch('interimRate', v),
     setInterimTotalMonths: (v: number) => patch('interimTotalMonths', v),

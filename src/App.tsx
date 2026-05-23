@@ -32,6 +32,7 @@ function App() {
     setOwnedHomes,
     setIsLargeArea,
     setLtv,
+    setAppraisalRate,
     setTargetPriceMan,
     setInterimRate,
     setInterimTotalMonths,
@@ -51,6 +52,7 @@ function App() {
     ownedHomes,
     isLargeArea,
     ltv,
+    appraisalRate,
     targetPriceMan,
     interimRate,
     interimTotalMonths,
@@ -75,8 +77,9 @@ function App() {
       interimRate,
       interimTotalMonths,
       ltv,
+      appraisalRate,
     );
-  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltv]);
+  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltv, appraisalRate]);
 
   const bestResult = useMemo(() => {
     return results.reduce((best, r) =>
@@ -92,7 +95,7 @@ function App() {
     return calcAcquisitionCosts(targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
   }, [targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths]);
 
-  const ltvLimitWon = targetWon * (ltv / 100);
+  const ltvLimitWon = targetWon * (appraisalRate / 100) * (ltv / 100);
 
   const simulations = useMemo(() => {
     return results.map((r) => {
@@ -201,6 +204,14 @@ function App() {
               suffix="%"
               min={0}
               max={100}
+            />
+            <InputField
+              label="감정가율"
+              value={appraisalRate}
+              onChange={setAppraisalRate}
+              suffix="%"
+              min={100}
+              max={200}
             />
             <InputField
               label="상환 기간"

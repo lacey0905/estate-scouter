@@ -67,12 +67,16 @@ export function calcMaxLoanFromDSR(
 
 /**
  * LTV 기준 최대 대출 가능 원금
- * property = assets + loan, loan ≤ property × LTV
- * → loan ≤ assets × LTV / (1 - LTV)
+ * 감정가 = property × appraisalRate, loan ≤ 감정가 × LTV
+ * property = assets + loan
+ * → loan ≤ assets × effectiveLTV / (1 - effectiveLTV)
+ * effectiveLTV = appraisalRate × LTV (≥1 이면 제한 없음)
  */
-function calcMaxLoanFromLTV(assets: number, ltvPercent: number): number {
-  if (ltvPercent <= 0 || ltvPercent >= 100) return Infinity;
-  return assets * (ltvPercent / 100) / (1 - ltvPercent / 100);
+function calcMaxLoanFromLTV(assets: number, ltvPercent: number, appraisalRate = 100): number {
+  if (ltvPercent <= 0) return 0;
+  const effectiveLtv = (appraisalRate / 100) * (ltvPercent / 100);
+  if (effectiveLtv >= 1) return Infinity;
+  return assets * effectiveLtv / (1 - effectiveLtv);
 }
 
 export function calculateLoanScenario(
@@ -83,6 +87,7 @@ export function calculateLoanScenario(
   interimRate = 0,
   interimTotalMonths = 0,
   ltvPercent = 70,
+  appraisalRate = 100,
 ): LoanResult {
   const { annualIncome, assets, interestRate, loanTermYears, dsrLimit, stressDsrRate } = input;
 
@@ -96,7 +101,7 @@ export function calculateLoanScenario(
     annualIncome, dsrLimit, effectiveRate, loanTermYears
   );
 
-  const ltvMaxLoan = calcMaxLoanFromLTV(assets, ltvPercent);
+  const ltvMaxLoan = calcMaxLoanFromLTV(assets, ltvPercent, appraisalRate);
 
   const maxLoanAmount = Math.min(dsrMaxLoan, ltvMaxLoan);
   const stressMaxLoanAmount = Math.min(dsrStressMaxLoan, ltvMaxLoan);
@@ -147,6 +152,7 @@ export function runAllScenarios(
   interimRate = 0,
   interimTotalMonths = 0,
   ltvPercent = 70,
+  appraisalRate = 100,
 ): LoanResult[] {
   const results: LoanResult[] = [];
 
@@ -156,7 +162,7 @@ export function runAllScenarios(
     loanTermYears,
     dsrLimit: 40,
     stressDsrRate: stressRate,
-  }, '1금융 주담대', ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltvPercent));
+  }, '1금융 주담대', ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltvPercent, appraisalRate));
 
   results.push(calculateLoanScenario({
     annualIncome, assets,
@@ -164,7 +170,7 @@ export function runAllScenarios(
     loanTermYears,
     dsrLimit: 50,
     stressDsrRate: stressRate,
-  }, '2금융 주담대', ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltvPercent));
+  }, '2금융 주담대', ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltvPercent, appraisalRate));
 
   results.push(calculateLoanScenario({
     annualIncome, assets,
@@ -172,7 +178,7 @@ export function runAllScenarios(
     loanTermYears: 30,
     dsrLimit: 40,
     stressDsrRate: 0,
-  }, '1금융 순수고정 30년', ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltvPercent));
+  }, '1금융 순수고정 30년', ownedHomes, isLargeArea, interimRate, interimTotalMonths, ltvPercent, appraisalRate));
 
   return results;
 }
