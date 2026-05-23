@@ -524,19 +524,58 @@ button {
       }
     }
 
-    &--sub {
-      padding: 6px 14px;
-      background: transparent;
-      border: none;
+  }
 
-      dt {
-        font-size: 0.5625rem;
+  &__cost-breakdown {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: $color-surface-inset;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+  }
+
+  &__cost-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $color-text-muted;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+
+    strong {
+      color: $color-text;
+      font-family: $font-mono;
+      margin-left: 6px;
+    }
+  }
+
+  &__cost-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: $color-text-muted;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba($color-border, 0.5);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      span:first-child {
         color: $color-text-dim;
       }
 
-      dd {
-        font-size: 0.875rem;
-        color: $color-text-muted;
+      span:last-child {
+        font-family: $font-mono;
+        font-weight: 500;
+        color: $color-text-secondary;
       }
     }
   }

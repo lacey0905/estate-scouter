@@ -271,16 +271,6 @@ function App() {
               <span>{formatKRW(maxSlider * 10000)}</span>
             </div>
             <dl className="dashboard__kpis">
-              <div className="dashboard__kpi">
-                <dt>부대비용</dt>
-                <dd>{formatKRW(targetCosts.total)}</dd>
-              </div>
-              {targetCosts.interimInterest > 0 && (
-                <div className="dashboard__kpi dashboard__kpi--sub">
-                  <dt>└ 중도금 이자</dt>
-                  <dd>{formatKRW(targetCosts.interimInterest)}</dd>
-                </div>
-              )}
               <div className="dashboard__kpi dashboard__kpi--accent">
                 <dt>필요 총액</dt>
                 <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
@@ -290,6 +280,22 @@ function App() {
                 <dd>{formatKRW(assets * 10000)}</dd>
               </div>
             </dl>
+
+            <div className="dashboard__cost-breakdown">
+              <p className="dashboard__cost-title">부대비용 합계 <strong>{formatKRW(targetCosts.total)}</strong></p>
+              <ul className="dashboard__cost-list">
+                <li><span>취득세</span><span>{formatKRW(targetCosts.acquisitionTax)}</span></li>
+                <li><span>지방교육세</span><span>{formatKRW(targetCosts.localEducationTax)}</span></li>
+                {targetCosts.ruralSpecialTax > 0 && (
+                  <li><span>농어촌특별세</span><span>{formatKRW(targetCosts.ruralSpecialTax)}</span></li>
+                )}
+                <li><span>중개수수료</span><span>{formatKRW(targetCosts.brokerageFee)}</span></li>
+                <li><span>기타 (법무사·인지세·채권)</span><span>{formatKRW(targetCosts.otherCosts)}</span></li>
+                {targetCosts.interimInterest > 0 && (
+                  <li><span>중도금 이자 (후불)</span><span>{formatKRW(targetCosts.interimInterest)}</span></li>
+                )}
+              </ul>
+            </div>
           </section>
 
           <section className="compare" aria-labelledby="compare-title">
@@ -421,7 +427,7 @@ interface CompareTableProps {
   results: LoanResult[];
   best: LoanResult;
   simulations: Simulation[];
-  targetCosts: { total: number; interimInterest: number };
+  targetCosts: ReturnType<typeof calcAcquisitionCosts>;
   targetWon: number;
 }
 
