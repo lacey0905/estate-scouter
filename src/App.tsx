@@ -109,7 +109,7 @@ function App() {
       const affordable = shortfall === 0;
       const termYears = r.label.includes('30년') ? 30 : loanTermYears;
       const monthly = actualLoan > 0
-        ? calcMonthlyPayment(actualLoan, r.effectiveRate, termYears)
+        ? calcMonthlyPayment(actualLoan, r.interestRate, termYears)
         : 0;
       const margin = Math.max(0, loanCap - actualLoan);
       return { ...r, requiredLoan: rawLoan, actualLoan, shortfall, affordable, monthly, margin, totalNeeded };
