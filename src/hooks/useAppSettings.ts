@@ -33,5 +33,6 @@ export function useAppSettings() {
     setLoanTermYears: (v: number) => patch('loanTermYears', v),
     setOwnedHomes: (v: OwnedHomes) => patch('ownedHomes', v),
     setIsLargeArea: (v: boolean) => patch('isLargeArea', v),
+    setTargetPriceMan: (v: number) => patch('targetPriceMan', v),
   };
 }

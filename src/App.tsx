@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react';
-import { runAllScenarios, formatKRW, type LoanResult } from './utils/calculator';
+import { runAllScenarios, calcMonthlyPayment, formatKRW, type LoanResult } from './utils/calculator';
 import { useAppSettings } from './hooks/useAppSettings';
 import {
   LOAN_RATE_TYPES,
@@ -7,7 +7,7 @@ import {
   getStressRatio,
   type LoanRateType,
 } from './utils/stressDsr';
-import { type OwnedHomes } from './utils/acquisitionCost';
+import { type OwnedHomes, calcAcquisitionCosts } from './utils/acquisitionCost';
 import './styles/main.scss';
 
 const OWNED_HOMES_OPTIONS: { value: OwnedHomes; label: string }[] = [
@@ -31,6 +31,7 @@ function App() {
     setLoanTermYears,
     setOwnedHomes,
     setIsLargeArea,
+    setTargetPriceMan,
   } = useAppSettings();
 
   const {
@@ -46,6 +47,7 @@ function App() {
     loanTermYears,
     ownedHomes,
     isLargeArea,
+    targetPriceMan,
   } = settings;
 
   const stressRate = calcStressRate(stressBase, loanRateType);
@@ -72,6 +74,29 @@ function App() {
       r.adjustedPrice > best.adjustedPrice ? r : best
     , results[0]);
   }, [results]);
+
+  const maxSlider = Math.ceil(bestResult.stressMaxPropertyPrice / 10000);
+  const effectiveTargetMan = targetPriceMan > 0 ? Math.min(targetPriceMan, maxSlider) : Math.floor(bestResult.adjustedPrice / 10000);
+  const targetWon = effectiveTargetMan * 10000;
+
+  const targetCosts = useMemo(() => {
+    return calcAcquisitionCosts(targetWon, ownedHomes, isLargeArea);
+  }, [targetWon, ownedHomes, isLargeArea]);
+
+  const simulations = useMemo(() => {
+    return results.map((r) => {
+      const totalNeeded = targetWon + targetCosts.total;
+      const assetsWon = assets * 10000;
+      const requiredLoan = Math.max(0, totalNeeded - assetsWon);
+      const maxLoan = r.stressMaxLoanAmount;
+      const affordable = requiredLoan <= maxLoan;
+      const monthly = requiredLoan > 0
+        ? calcMonthlyPayment(requiredLoan, r.effectiveRate, r.label.includes('30년') ? 30 : loanTermYears)
+        : 0;
+      const loanMargin = maxLoan - requiredLoan;
+      return { ...r, requiredLoan, affordable, monthly, loanMargin, totalNeeded };
+    });
+  }, [results, targetWon, targetCosts, assets, loanTermYears]);
 
   return (
     <div className="layout">
@@ -204,7 +229,6 @@ function App() {
                 </div>
               </div>
             </div>
-            <CostSummary result={bestResult} />
           </SidebarSection>
         </nav>
       </aside>
@@ -212,7 +236,7 @@ function App() {
       <main className="content">
         <div className="content__inner">
           <section className="hero" aria-labelledby="hero-title">
-            <p className="hero__eyebrow" id="hero-title">실 매입 가능 금액 (부대비용 차감)</p>
+            <p className="hero__eyebrow" id="hero-title">실 매입 가능 한도 (부대비용 차감)</p>
             <p className="hero__amount">{formatKRW(bestResult.adjustedPrice)}</p>
             <p className="hero__sub">
               <span className="hero__badge">{bestResult.label}</span>
@@ -235,6 +259,77 @@ function App() {
             </dl>
           </section>
 
+          <section className="sim" aria-labelledby="sim-title">
+            <h2 className="sim__title" id="sim-title">매물 시뮬레이션</h2>
+
+            <div className="sim__slider-area">
+              <div className="sim__price-display">
+                <span className="sim__price-label">매물 가격</span>
+                <span className="sim__price-value">{formatKRW(targetWon)}</span>
+              </div>
+              <input
+                type="range"
+                className="sim__range"
+                min={0}
+                max={maxSlider}
+                step={100}
+                value={effectiveTargetMan}
+                onChange={(e) => setTargetPriceMan(Number(e.target.value))}
+              />
+              <div className="sim__range-labels">
+                <span>0</span>
+                <span>한도 {formatKRW(bestResult.adjustedPrice)}</span>
+              </div>
+            </div>
+
+            <div className="sim__cost-bar">
+              <div className="sim__cost-item">
+                <span>부대비용</span>
+                <span>{formatKRW(targetCosts.total)}</span>
+              </div>
+              <div className="sim__cost-item">
+                <span>필요 총액</span>
+                <strong>{formatKRW(targetWon + targetCosts.total)}</strong>
+              </div>
+            </div>
+
+            <div className="sim__cards">
+              {simulations.map((s, i) => (
+                <div
+                  key={i}
+                  className={`sim__card ${s.affordable ? 'sim__card--ok' : 'sim__card--over'}`}
+                >
+                  <div className="sim__card-header">
+                    <span className="sim__card-name">{s.label}</span>
+                    <span className={`sim__card-badge ${s.affordable ? '' : 'sim__card-badge--over'}`}>
+                      {s.affordable ? '가능' : '한도 초과'}
+                    </span>
+                  </div>
+                  <div className="sim__card-body">
+                    <div className="sim__card-row">
+                      <span>필요 대출</span>
+                      <span>{formatKRW(s.requiredLoan)}</span>
+                    </div>
+                    <div className="sim__card-row">
+                      <span>대출 한도</span>
+                      <span>{formatKRW(s.stressMaxLoanAmount)}</span>
+                    </div>
+                    <div className="sim__card-row sim__card-row--highlight">
+                      <span>월 상환액</span>
+                      <span>{formatKRW(s.monthly)}</span>
+                    </div>
+                    {s.affordable && (
+                      <div className="sim__card-row sim__card-row--margin">
+                        <span>대출 여유</span>
+                        <span>{formatKRW(s.loanMargin)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="compare" aria-labelledby="compare-title">
             <h2 className="compare__title" id="compare-title">시나리오 한눈에 비교</h2>
             <CompareTable results={results} best={bestResult} />
@@ -247,34 +342,6 @@ function App() {
           </footer>
         </div>
       </main>
-    </div>
-  );
-}
-
-function CostSummary({ result }: { result: LoanResult }) {
-  const c = result.acquisitionCosts;
-  const items = [
-    { label: '취득세', value: c.acquisitionTax },
-    { label: '지방교육세', value: c.localEducationTax },
-    ...(c.ruralSpecialTax > 0 ? [{ label: '농어촌특별세', value: c.ruralSpecialTax }] : []),
-    { label: '중개수수료', value: c.brokerageFee },
-    { label: '기타 (법무사·인지세 등)', value: c.otherCosts },
-  ];
-
-  return (
-    <div className="cost-summary">
-      <div className="cost-summary__header">
-        <span className="cost-summary__label">예상 부대비용 합계</span>
-        <span className="cost-summary__total">{formatKRW(c.total)}</span>
-      </div>
-      <div className="cost-summary__breakdown">
-        {items.map((item) => (
-          <div key={item.label} className="cost-summary__row">
-            <span>{item.label}</span>
-            <span>{formatKRW(item.value)}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

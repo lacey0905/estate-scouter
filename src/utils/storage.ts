@@ -16,6 +16,7 @@ export interface AppSettings {
   loanTermYears: number;
   ownedHomes: OwnedHomes;
   isLargeArea: boolean;
+  targetPriceMan: number;
 }
 
 export const STORAGE_KEY = 'estate-scouter:settings';
@@ -33,6 +34,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   loanTermYears: 30,
   ownedHomes: 0,
   isLargeArea: false,
+  targetPriceMan: 0,
 };
 
 function isFiniteNumber(value: unknown): value is number {
@@ -77,6 +79,7 @@ export function normalizeSettings(raw: unknown): AppSettings {
     loanTermYears: Math.min(50, Math.max(10, loanTermYears)),
     ownedHomes: pickOwnedHomes(data.ownedHomes, DEFAULT_SETTINGS.ownedHomes),
     isLargeArea: pickBoolean(data.isLargeArea, DEFAULT_SETTINGS.isLargeArea),
+    targetPriceMan: Math.max(0, pickNumber(data.targetPriceMan, DEFAULT_SETTINGS.targetPriceMan)),
   };
 }
 
