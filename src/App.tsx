@@ -235,106 +235,61 @@ function App() {
 
       <main className="content">
         <div className="content__inner">
-          <div className="top-grid">
-            <section className="hero" aria-labelledby="hero-title">
-              <p className="hero__eyebrow" id="hero-title">실 매입 가능 한도</p>
-              <p className="hero__amount">{formatKRW(bestResult.adjustedPrice)}</p>
-              <p className="hero__sub">
-                <span className="hero__badge">{bestResult.label}</span>
-                스트레스 DSR {bestResult.effectiveRate.toFixed(2)}%
-              </p>
+          <section className="hero" aria-labelledby="hero-title">
+            <p className="hero__eyebrow" id="hero-title">실 매입 가능 한도</p>
+            <p className="hero__amount">{formatKRW(bestResult.adjustedPrice)}</p>
+            <p className="hero__sub">
+              <span className="hero__badge">{bestResult.label}</span>
+              스트레스 DSR {bestResult.effectiveRate.toFixed(2)}% · {incomeYear}년 소득 {formatKRW(annualIncome * 10000)}
+            </p>
 
-              <dl className="hero__stats">
-                <div className="hero__stat">
-                  <dt>최대 대출</dt>
-                  <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
-                </div>
-                <div className="hero__stat">
-                  <dt>부대비용</dt>
-                  <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
-                </div>
-                <div className="hero__stat hero__stat--accent">
-                  <dt>월 상환액</dt>
-                  <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
-                </div>
-              </dl>
-            </section>
+            <dl className="hero__stats">
+              <div className="hero__stat">
+                <dt>최대 대출</dt>
+                <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
+              </div>
+              <div className="hero__stat">
+                <dt>부대비용</dt>
+                <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
+              </div>
+              <div className="hero__stat hero__stat--accent">
+                <dt>월 상환액</dt>
+                <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
+              </div>
+            </dl>
+          </section>
 
-            <section className="sim" aria-labelledby="sim-title">
-              <h2 className="sim__title" id="sim-title">매물 시뮬레이션</h2>
-
-              <div className="sim__slider-area">
-                <div className="sim__price-display">
-                  <span className="sim__price-label">매물 가격</span>
-                  <span className="sim__price-value">{formatKRW(targetWon)}</span>
+          <section className="compare" aria-labelledby="compare-title">
+            <div className="compare__header">
+              <h2 className="compare__title" id="compare-title">시나리오 비교</h2>
+              <div className="compare__slider">
+                <div className="compare__slider-top">
+                  <span className="compare__slider-label">매물 가격</span>
+                  <span className="compare__slider-value">{formatKRW(targetWon)}</span>
                 </div>
                 <input
                   type="range"
-                  className="sim__range"
+                  className="compare__range"
                   min={0}
                   max={maxSlider}
                   step={100}
                   value={effectiveTargetMan}
                   onChange={(e) => setTargetPriceMan(Number(e.target.value))}
                 />
-                <div className="sim__range-labels">
+                <div className="compare__range-labels">
                   <span>0</span>
                   <span>한도 {formatKRW(bestResult.adjustedPrice)}</span>
                 </div>
               </div>
+            </div>
 
-              <div className="sim__cost-bar">
-                <div className="sim__cost-item">
-                  <span>부대비용</span>
-                  <span>{formatKRW(targetCosts.total)}</span>
-                </div>
-                <div className="sim__cost-item">
-                  <span>필요 총액</span>
-                  <strong>{formatKRW(targetWon + targetCosts.total)}</strong>
-                </div>
-              </div>
-
-              <div className="sim__cards">
-                {simulations.map((s, i) => (
-                  <div
-                    key={i}
-                    className={`sim__card ${s.affordable ? 'sim__card--ok' : 'sim__card--over'}`}
-                  >
-                    <div className="sim__card-header">
-                      <span className="sim__card-name">{s.label}</span>
-                      <span className={`sim__card-badge ${s.affordable ? '' : 'sim__card-badge--over'}`}>
-                        {s.affordable ? '가능' : '초과'}
-                      </span>
-                    </div>
-                    <div className="sim__card-body">
-                      <div className="sim__card-row">
-                        <span>필요 대출</span>
-                        <span>{formatKRW(s.requiredLoan)}</span>
-                      </div>
-                      <div className="sim__card-row">
-                        <span>대출 한도</span>
-                        <span>{formatKRW(s.stressMaxLoanAmount)}</span>
-                      </div>
-                      <div className="sim__card-row sim__card-row--highlight">
-                        <span>월 상환액</span>
-                        <span>{formatKRW(s.monthly)}</span>
-                      </div>
-                      {s.affordable && (
-                        <div className="sim__card-row sim__card-row--margin">
-                          <span>대출 여유</span>
-                          <span>{formatKRW(s.loanMargin)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          <section className="compare" aria-labelledby="compare-title">
-            <h2 className="compare__title" id="compare-title">시나리오 한눈에 비교</h2>
-            <CompareTable results={results} best={bestResult} />
+            <CompareTable
+              results={results}
+              best={bestResult}
+              simulations={simulations}
+              targetCosts={targetCosts}
+              targetWon={targetWon}
+            />
           </section>
 
           <footer className="content__footer">
@@ -441,32 +396,58 @@ function InputField({
   );
 }
 
-function CompareTable({ results, best }: { results: LoanResult[]; best: LoanResult }) {
+interface Simulation {
+  label: string;
+  stressMaxLoanAmount: number;
+  requiredLoan: number;
+  affordable: boolean;
+  monthly: number;
+  loanMargin: number;
+}
+
+interface CompareTableProps {
+  results: LoanResult[];
+  best: LoanResult;
+  simulations: Simulation[];
+  targetCosts: { total: number };
+  targetWon: number;
+}
+
+function CompareTable({ results, best, simulations, targetCosts, targetWon }: CompareTableProps) {
   return (
     <div className="compare__wrap">
       <table className="compare__table">
         <thead>
           <tr>
             <th className="compare__corner" scope="col" />
-            {results.map((r, i) => (
-              <th
-                key={i}
-                scope="col"
-                className={r === best ? 'compare__col--best' : ''}
-              >
-                <span className="compare__col-name">{r.label}</span>
-                <span className="compare__col-meta">
-                  DSR {r.dsrLimit}% · {r.interestRate}%
-                  {r.effectiveRate !== r.interestRate && ` → ${r.effectiveRate.toFixed(2)}%`}
-                </span>
-                {r === best && <span className="compare__col-tag">추천</span>}
-              </th>
-            ))}
+            {results.map((r, i) => {
+              const sim = simulations[i];
+              return (
+                <th
+                  key={i}
+                  scope="col"
+                  className={r === best ? 'compare__col--best' : ''}
+                >
+                  <span className="compare__col-name">{r.label}</span>
+                  <span className="compare__col-meta">
+                    DSR {r.dsrLimit}% · {r.interestRate}%
+                    {r.effectiveRate !== r.interestRate && ` → ${r.effectiveRate.toFixed(2)}%`}
+                  </span>
+                  {r === best && <span className="compare__col-tag">추천</span>}
+                  <span className={`compare__col-status ${sim.affordable ? 'compare__col-status--ok' : 'compare__col-status--over'}`}>
+                    {sim.affordable ? '매입 가능' : '한도 초과'}
+                  </span>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
+          <tr className="compare__row--section">
+            <th scope="row" colSpan={results.length + 1}>한도</th>
+          </tr>
           <tr className="compare__row--main">
-            <th scope="row">실 매입 가능</th>
+            <th scope="row">실 매입 한도</th>
             {results.map((r, i) => (
               <td
                 key={i}
@@ -480,34 +461,51 @@ function CompareTable({ results, best }: { results: LoanResult[]; best: LoanResu
             ))}
           </tr>
           <tr>
-            <th scope="row">총 매입 가능</th>
-            {results.map((r, i) => (
-              <td key={i} className={r === best ? 'compare__col--best' : ''}>
-                {formatKRW(r.stressMaxPropertyPrice)}
-              </td>
-            ))}
-          </tr>
-          <tr className="compare__row--cost">
-            <th scope="row">부대비용</th>
-            {results.map((r, i) => (
-              <td key={i} className={r === best ? 'compare__col--best' : ''}>
-                <span className="compare__cost-val">−{formatKRW(r.acquisitionCosts.total)}</span>
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <th scope="row">최대 대출</th>
+            <th scope="row">대출 한도</th>
             {results.map((r, i) => (
               <td key={i} className={r === best ? 'compare__col--best' : ''}>
                 {formatKRW(r.stressMaxLoanAmount)}
               </td>
             ))}
           </tr>
+          <tr className="compare__row--section">
+            <th scope="row" colSpan={results.length + 1}>매물 기준 ({formatKRW(targetWon)})</th>
+          </tr>
+          <tr>
+            <th scope="row">필요 대출</th>
+            {simulations.map((s, i) => (
+              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                {formatKRW(s.requiredLoan)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">부대비용</th>
+            {results.map((_, i) => (
+              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                <span className="compare__cost-val">−{formatKRW(targetCosts.total)}</span>
+              </td>
+            ))}
+          </tr>
           <tr>
             <th scope="row">월 상환액</th>
-            {results.map((r, i) => (
-              <td key={i} className={r === best ? 'compare__col--best' : ''}>
-                {formatKRW(r.stressMonthlyPayment)}
+            {simulations.map((s, i) => (
+              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                {formatKRW(s.monthly)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">대출 여유</th>
+            {simulations.map((s, i) => (
+              <td
+                key={i}
+                className={[
+                  results[i] === best ? 'compare__col--best' : '',
+                  s.affordable ? 'compare__cell--margin' : 'compare__cell--over',
+                ].filter(Boolean).join(' ')}
+              >
+                {s.affordable ? formatKRW(s.loanMargin) : '초과'}
               </td>
             ))}
           </tr>

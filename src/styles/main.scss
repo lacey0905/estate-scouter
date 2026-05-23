@@ -400,20 +400,11 @@ button {
   }
 }
 
-// ─── Top grid (hero + sim side-by-side) ─────────────
-
-.top-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-  margin-bottom: 28px;
-}
-
 // ─── Hero summary ────────────────────────────────────
 
 .hero {
   padding: 32px 36px 28px;
+  margin-bottom: 24px;
   background: $color-surface;
   border: 1px solid $color-border;
   border-radius: $radius-xl;
@@ -501,43 +492,50 @@ button {
   }
 }
 
-// ─── Simulation section ─────────────────────────────
+// ─── Compare table ─────────────────────────────────────
 
-.sim {
+.compare {
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+
   &__title {
     font-size: 0.8125rem;
     font-weight: 700;
     color: $color-text-muted;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin-bottom: 16px;
+    white-space: nowrap;
+    padding-top: 6px;
   }
 
-  &__slider-area {
-    padding: 24px 28px 16px;
-    background: $color-surface;
-    border: 1px solid $color-border;
-    border-radius: $radius-lg $radius-lg 0 0;
+  &__slider {
+    flex: 1;
+    max-width: 480px;
   }
 
-  &__price-display {
+  &__slider-top {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 
-  &__price-label {
-    font-size: 0.8125rem;
+  &__slider-label {
+    font-size: 0.75rem;
     font-weight: 600;
     color: $color-text-muted;
   }
 
-  &__price-value {
-    font-size: 1.5rem;
+  &__slider-value {
+    font-size: 1.125rem;
     font-weight: 800;
     font-family: $font-mono;
-    color: $color-text;
+    color: $color-primary-hover;
     letter-spacing: -0.03em;
   }
 
@@ -552,8 +550,8 @@ button {
 
     &::-webkit-slider-thumb {
       appearance: none;
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: $color-primary;
       border: 3px solid $color-surface;
@@ -568,8 +566,8 @@ button {
     }
 
     &::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: $color-primary;
       border: 3px solid $color-surface;
@@ -586,155 +584,10 @@ button {
   &__range-labels {
     display: flex;
     justify-content: space-between;
-    margin-top: 8px;
-    font-size: 0.6875rem;
+    margin-top: 6px;
+    font-size: 0.625rem;
     color: $color-text-dim;
     font-family: $font-mono;
-  }
-
-  &__cost-bar {
-    display: flex;
-    gap: 0;
-    background: $color-surface-inset;
-    border-left: 1px solid $color-border;
-    border-right: 1px solid $color-border;
-    border-bottom: 1px solid $color-border;
-  }
-
-  &__cost-item {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    font-size: 0.8125rem;
-    color: $color-text-muted;
-
-    &:not(:last-child) {
-      border-right: 1px solid $color-border;
-    }
-
-    strong {
-      font-family: $font-mono;
-      font-weight: 700;
-      color: $color-text;
-    }
-
-    span:last-child:not(strong) {
-      font-family: $font-mono;
-      color: $color-warning;
-    }
-  }
-
-  &__cards {
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid $color-border;
-    border-right: 1px solid $color-border;
-    border-bottom: 1px solid $color-border;
-    border-radius: 0 0 $radius-lg $radius-lg;
-    overflow: hidden;
-  }
-
-  &__card {
-    padding: 16px 20px;
-    background: $color-surface;
-    transition: background $transition-fast;
-
-    &:not(:last-child) {
-      border-bottom: 1px solid $color-border;
-    }
-
-    &--ok {
-      .sim__card-header {
-        border-bottom-color: $color-success-border;
-      }
-    }
-
-    &--over {
-      background: $color-danger-bg;
-
-      .sim__card-header {
-        border-bottom-color: $color-danger-border;
-      }
-
-      .sim__card-body {
-        opacity: 0.6;
-      }
-    }
-  }
-
-  &__card-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  &__card-name {
-    font-size: 0.8125rem;
-    font-weight: 700;
-    color: $color-text;
-  }
-
-  &__card-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    font-size: 0.625rem;
-    font-weight: 700;
-    border-radius: 999px;
-    background: $color-success-bg;
-    color: $color-success;
-    border: 1px solid $color-success-border;
-
-    &--over {
-      background: $color-danger-bg;
-      color: $color-danger;
-      border-color: $color-danger-border;
-    }
-  }
-
-  &__card-body {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 16px;
-  }
-
-  &__card-row {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    font-size: 0.75rem;
-    color: $color-text-muted;
-
-    span:last-child {
-      font-family: $font-mono;
-      font-weight: 600;
-      color: $color-text-secondary;
-    }
-
-    &--highlight span:last-child {
-      color: $color-warning;
-      font-weight: 700;
-    }
-
-    &--margin span:last-child {
-      color: $color-success;
-      font-weight: 700;
-    }
-  }
-}
-
-// ─── Compare table ─────────────────────────────────────
-
-.compare {
-  &__title {
-    font-size: 0.8125rem;
-    font-weight: 700;
-    color: $color-text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 12px;
   }
 
   &__wrap {
@@ -841,6 +694,50 @@ button {
   &__col--best.compare__cell--main {
     color: $color-primary-hover !important;
   }
+
+  &__col-status {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 8px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    border-radius: 999px;
+
+    &--ok {
+      background: $color-success-bg;
+      color: $color-success;
+      border: 1px solid $color-success-border;
+    }
+
+    &--over {
+      background: $color-danger-bg;
+      color: $color-danger;
+      border: 1px solid $color-danger-border;
+    }
+  }
+
+  &__row--section {
+    th {
+      text-align: left !important;
+      font-size: 0.6875rem !important;
+      font-weight: 700 !important;
+      color: $color-text-dim !important;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 8px 20px !important;
+      background: $color-bg-subtle !important;
+      border-bottom: 1px solid $color-border !important;
+    }
+  }
+
+  &__cell--margin {
+    color: $color-success !important;
+  }
+
+  &__cell--over {
+    color: $color-danger !important;
+    font-weight: 500 !important;
+  }
 }
 
 // ─── Responsive ──────────────────────────────────────
@@ -854,17 +751,12 @@ button {
     font-size: 1.125rem;
   }
 
-  .top-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sim__cost-bar {
+  .compare__header {
     flex-direction: column;
   }
 
-  .sim__cost-item:not(:last-child) {
-    border-right: none !important;
-    border-bottom: 1px solid $color-border;
+  .compare__slider {
+    max-width: 100%;
   }
 }
 
