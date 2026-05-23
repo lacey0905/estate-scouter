@@ -314,6 +314,68 @@ button {
   }
 }
 
+// ─── Cost summary (sidebar) ─────────────────────────
+
+.cost-summary {
+  background: $color-surface-inset;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid $color-border;
+    background: $color-warning-bg;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: $color-text-muted;
+  }
+
+  &__total {
+    font-size: 0.875rem;
+    font-family: $font-mono;
+    font-weight: 700;
+    color: $color-warning;
+  }
+
+  &__breakdown {
+    padding: 8px 12px;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 0.6875rem;
+    color: $color-text-dim;
+
+    span:last-child {
+      font-family: $font-mono;
+      color: $color-text-muted;
+    }
+  }
+}
+
+// ─── Compare cost row ───────────────────────────────
+
+.compare__row--cost {
+  td {
+    border-bottom-style: dashed !important;
+  }
+}
+
+.compare__cost-val {
+  color: $color-warning !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+}
+
 // ─── Main content ────────────────────────────────────
 
 .content {

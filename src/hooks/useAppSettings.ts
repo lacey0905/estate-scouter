@@ -6,6 +6,7 @@ import {
   saveSettings,
 } from '../utils/storage';
 import { type LoanRateType } from '../utils/stressDsr';
+import { type OwnedHomes } from '../utils/acquisitionCost';
 
 export function useAppSettings() {
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
@@ -30,5 +31,7 @@ export function useAppSettings() {
     setStressBase: (v: number) => patch('stressBase', v),
     setLoanRateType: (v: LoanRateType) => patch('loanRateType', v),
     setLoanTermYears: (v: number) => patch('loanTermYears', v),
+    setOwnedHomes: (v: OwnedHomes) => patch('ownedHomes', v),
+    setIsLargeArea: (v: boolean) => patch('isLargeArea', v),
   };
 }

@@ -1,3 +1,9 @@
+import {
+  type OwnedHomes,
+  type AcquisitionCostBreakdown,
+  calcAdjustedPropertyPrice,
+} from './acquisitionCost';
+
 export interface LoanInput {
   annualIncome: number;
   assets: number;
@@ -20,6 +26,8 @@ export interface LoanResult {
   stressMaxLoanAmount: number;
   stressMaxPropertyPrice: number;
   stressMonthlyPayment: number;
+  adjustedPrice: number;
+  acquisitionCosts: AcquisitionCostBreakdown;
 }
 
 /**
@@ -39,8 +47,6 @@ export function calcMonthlyPayment(
 
 /**
  * DSR 기준 최대 대출 가능 원금 역산
- * maxMonthly = (income × dsrLimit / 100) / 12
- * P = maxMonthly × [(1+r)^n - 1] / [r(1+r)^n]
  */
 export function calcMaxLoanFromDSR(
   annualIncome: number,
@@ -61,7 +67,9 @@ export function calcMaxLoanFromDSR(
 
 export function calculateLoanScenario(
   input: LoanInput,
-  label: string
+  label: string,
+  ownedHomes: OwnedHomes,
+  isLargeArea: boolean,
 ): LoanResult {
   const { annualIncome, assets, interestRate, loanTermYears, dsrLimit, stressDsrRate } = input;
 
@@ -80,6 +88,14 @@ export function calculateLoanScenario(
   const monthlyPaymentAtMax = calcMonthlyPayment(maxLoanAmount, interestRate, loanTermYears);
   const stressMonthlyPayment = calcMonthlyPayment(stressMaxLoanAmount, effectiveRate, loanTermYears);
 
+  const stressMaxPropertyPrice = Math.max(0, assets + stressMaxLoanAmount);
+
+  const { adjustedPrice, costs } = calcAdjustedPropertyPrice(
+    stressMaxPropertyPrice,
+    ownedHomes,
+    isLargeArea,
+  );
+
   return {
     label,
     dsrLimit,
@@ -91,8 +107,10 @@ export function calculateLoanScenario(
     maxPropertyPrice: Math.max(0, assets + maxLoanAmount),
     monthlyPaymentAtMax,
     stressMaxLoanAmount: Math.max(0, stressMaxLoanAmount),
-    stressMaxPropertyPrice: Math.max(0, assets + stressMaxLoanAmount),
+    stressMaxPropertyPrice,
     stressMonthlyPayment,
+    adjustedPrice,
+    acquisitionCosts: costs,
   };
 }
 
@@ -103,7 +121,9 @@ export function runAllScenarios(
   rate2nd: number,
   rateFixed30: number,
   stressRate: number,
-  loanTermYears: number
+  loanTermYears: number,
+  ownedHomes: OwnedHomes,
+  isLargeArea: boolean,
 ): LoanResult[] {
   const results: LoanResult[] = [];
 
@@ -113,7 +133,7 @@ export function runAllScenarios(
     loanTermYears,
     dsrLimit: 40,
     stressDsrRate: stressRate,
-  }, '1금융 주담대'));
+  }, '1금융 주담대', ownedHomes, isLargeArea));
 
   results.push(calculateLoanScenario({
     annualIncome, assets,
@@ -121,7 +141,7 @@ export function runAllScenarios(
     loanTermYears,
     dsrLimit: 50,
     stressDsrRate: stressRate,
-  }, '2금융 주담대'));
+  }, '2금융 주담대', ownedHomes, isLargeArea));
 
   results.push(calculateLoanScenario({
     annualIncome, assets,
@@ -129,7 +149,7 @@ export function runAllScenarios(
     loanTermYears: 30,
     dsrLimit: 40,
     stressDsrRate: 0,
-  }, '1금융 순수고정 30년'));
+  }, '1금융 순수고정 30년', ownedHomes, isLargeArea));
 
   return results;
 }

@@ -1,4 +1,5 @@
 import { type LoanRateType, isValidLoanRateType } from './stressDsr';
+import { type OwnedHomes } from './acquisitionCost';
 
 export type IncomeYear = '2025' | '2026';
 
@@ -13,6 +14,8 @@ export interface AppSettings {
   stressBase: number;
   loanRateType: LoanRateType;
   loanTermYears: number;
+  ownedHomes: OwnedHomes;
+  isLargeArea: boolean;
 }
 
 export const STORAGE_KEY = 'estate-scouter:settings';
@@ -28,6 +31,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   stressBase: 1.5,
   loanRateType: 'mixed_5to9',
   loanTermYears: 30,
+  ownedHomes: 0,
+  isLargeArea: false,
 };
 
 function isFiniteNumber(value: unknown): value is number {
@@ -46,6 +51,14 @@ function pickLoanRateType(value: unknown, fallback: LoanRateType): LoanRateType 
   return isValidLoanRateType(value) ? value : fallback;
 }
 
+function pickOwnedHomes(value: unknown, fallback: OwnedHomes): OwnedHomes {
+  return value === 0 || value === 1 || value === 2 ? value : fallback;
+}
+
+function pickBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback;
+}
+
 export function normalizeSettings(raw: unknown): AppSettings {
   const data = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
 
@@ -62,6 +75,8 @@ export function normalizeSettings(raw: unknown): AppSettings {
     stressBase: pickNumber(data.stressBase, DEFAULT_SETTINGS.stressBase),
     loanRateType: pickLoanRateType(data.loanRateType, DEFAULT_SETTINGS.loanRateType),
     loanTermYears: Math.min(50, Math.max(10, loanTermYears)),
+    ownedHomes: pickOwnedHomes(data.ownedHomes, DEFAULT_SETTINGS.ownedHomes),
+    isLargeArea: pickBoolean(data.isLargeArea, DEFAULT_SETTINGS.isLargeArea),
   };
 }
 

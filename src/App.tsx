@@ -7,7 +7,14 @@ import {
   getStressRatio,
   type LoanRateType,
 } from './utils/stressDsr';
+import { type OwnedHomes } from './utils/acquisitionCost';
 import './styles/main.scss';
+
+const OWNED_HOMES_OPTIONS: { value: OwnedHomes; label: string }[] = [
+  { value: 0, label: '무주택' },
+  { value: 1, label: '1주택' },
+  { value: 2, label: '2주택+' },
+];
 
 function App() {
   const {
@@ -22,6 +29,8 @@ function App() {
     setStressBase,
     setLoanRateType,
     setLoanTermYears,
+    setOwnedHomes,
+    setIsLargeArea,
   } = useAppSettings();
 
   const {
@@ -35,6 +44,8 @@ function App() {
     stressBase,
     loanRateType,
     loanTermYears,
+    ownedHomes,
+    isLargeArea,
   } = settings;
 
   const stressRate = calcStressRate(stressBase, loanRateType);
@@ -50,13 +61,15 @@ function App() {
       rate2nd,
       rateFixed30,
       stressRate,
-      loanTermYears
+      loanTermYears,
+      ownedHomes,
+      isLargeArea,
     );
-  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears]);
+  }, [annualIncome, assets, rate1st, rate2nd, rateFixed30, stressRate, loanTermYears, ownedHomes, isLargeArea]);
 
   const bestResult = useMemo(() => {
     return results.reduce((best, r) =>
-      r.stressMaxPropertyPrice > best.stressMaxPropertyPrice ? r : best
+      r.adjustedPrice > best.adjustedPrice ? r : best
     , results[0]);
   }, [results]);
 
@@ -151,14 +164,56 @@ function App() {
               max={50}
             />
           </SidebarSection>
+
+          <SidebarSection title="매매 조건">
+            <div className="field">
+              <span className="field__label">보유 주택 수</span>
+              <div className="sidebar__segmented-wrap">
+                <div className="segmented" role="group" aria-label="보유 주택 수">
+                  {OWNED_HOMES_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`segmented__btn ${ownedHomes === opt.value ? 'segmented__btn--active' : ''}`}
+                      onClick={() => setOwnedHomes(opt.value)}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="field">
+              <span className="field__label">전용면적</span>
+              <div className="sidebar__segmented-wrap">
+                <div className="segmented" role="group" aria-label="전용면적">
+                  <button
+                    type="button"
+                    className={`segmented__btn ${!isLargeArea ? 'segmented__btn--active' : ''}`}
+                    onClick={() => setIsLargeArea(false)}
+                  >
+                    85㎡ 이하
+                  </button>
+                  <button
+                    type="button"
+                    className={`segmented__btn ${isLargeArea ? 'segmented__btn--active' : ''}`}
+                    onClick={() => setIsLargeArea(true)}
+                  >
+                    85㎡ 초과
+                  </button>
+                </div>
+              </div>
+            </div>
+            <CostSummary result={bestResult} />
+          </SidebarSection>
         </nav>
       </aside>
 
       <main className="content">
         <div className="content__inner">
           <section className="hero" aria-labelledby="hero-title">
-            <p className="hero__eyebrow" id="hero-title">최대 매입 가능 금액</p>
-            <p className="hero__amount">{formatKRW(bestResult.stressMaxPropertyPrice)}</p>
+            <p className="hero__eyebrow" id="hero-title">실 매입 가능 금액 (부대비용 차감)</p>
+            <p className="hero__amount">{formatKRW(bestResult.adjustedPrice)}</p>
             <p className="hero__sub">
               <span className="hero__badge">{bestResult.label}</span>
               스트레스 DSR {bestResult.effectiveRate.toFixed(2)}% · {incomeYear}년 소득 {formatKRW(annualIncome * 10000)}
@@ -170,8 +225,8 @@ function App() {
                 <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
               </div>
               <div className="hero__stat">
-                <dt>자기자본</dt>
-                <dd>{formatKRW(assets * 10000)}</dd>
+                <dt>부대비용</dt>
+                <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
               </div>
               <div className="hero__stat hero__stat--accent">
                 <dt>월 상환액</dt>
@@ -187,9 +242,39 @@ function App() {
 
           <footer className="content__footer">
             참고용 계산입니다. 실제 한도는 금융기관 심사 결과에 따라 달라질 수 있습니다.
+            <br />
+            취득세는 다주택 중과 기본 세율 기준이며, 정책 변경에 따라 달라질 수 있습니다.
           </footer>
         </div>
       </main>
+    </div>
+  );
+}
+
+function CostSummary({ result }: { result: LoanResult }) {
+  const c = result.acquisitionCosts;
+  const items = [
+    { label: '취득세', value: c.acquisitionTax },
+    { label: '지방교육세', value: c.localEducationTax },
+    ...(c.ruralSpecialTax > 0 ? [{ label: '농어촌특별세', value: c.ruralSpecialTax }] : []),
+    { label: '중개수수료', value: c.brokerageFee },
+    { label: '기타 (법무사·인지세 등)', value: c.otherCosts },
+  ];
+
+  return (
+    <div className="cost-summary">
+      <div className="cost-summary__header">
+        <span className="cost-summary__label">예상 부대비용 합계</span>
+        <span className="cost-summary__total">{formatKRW(c.total)}</span>
+      </div>
+      <div className="cost-summary__breakdown">
+        {items.map((item) => (
+          <div key={item.label} className="cost-summary__row">
+            <span>{item.label}</span>
+            <span>{formatKRW(item.value)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -287,25 +372,7 @@ function InputField({
   );
 }
 
-function getScenarioMetrics(r: LoanResult) {
-  const hasStress = r.effectiveRate !== r.interestRate;
-  return {
-    hasStress,
-    price: hasStress ? r.stressMaxPropertyPrice : r.maxPropertyPrice,
-    loan: hasStress ? r.stressMaxLoanAmount : r.maxLoanAmount,
-    monthly: hasStress ? r.stressMonthlyPayment : r.monthlyPaymentAtMax,
-    basePrice: r.maxPropertyPrice,
-  };
-}
-
 function CompareTable({ results, best }: { results: LoanResult[]; best: LoanResult }) {
-  const rows: { label: string; key: 'price' | 'loan' | 'monthly' | 'basePrice'; highlight?: boolean }[] = [
-    { label: '매입 가능', key: 'price', highlight: true },
-    { label: '최대 대출', key: 'loan' },
-    { label: '월 상환액', key: 'monthly' },
-    { label: '기본 금리 시 매입', key: 'basePrice' },
-  ];
-
   return (
     <div className="compare__wrap">
       <table className="compare__table">
@@ -329,27 +396,52 @@ function CompareTable({ results, best }: { results: LoanResult[]; best: LoanResu
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.key} className={row.highlight ? 'compare__row--main' : ''}>
-              <th scope="row">{row.label}</th>
-              {results.map((r, i) => {
-                const m = getScenarioMetrics(r);
-                const val = m[row.key];
-                const show = row.key === 'basePrice' ? m.hasStress : true;
-                return (
-                  <td
-                    key={i}
-                    className={[
-                      r === best ? 'compare__col--best' : '',
-                      row.highlight ? 'compare__cell--main' : '',
-                    ].filter(Boolean).join(' ')}
-                  >
-                    {show ? formatKRW(val) : '—'}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          <tr className="compare__row--main">
+            <th scope="row">실 매입 가능</th>
+            {results.map((r, i) => (
+              <td
+                key={i}
+                className={[
+                  r === best ? 'compare__col--best' : '',
+                  'compare__cell--main',
+                ].filter(Boolean).join(' ')}
+              >
+                {formatKRW(r.adjustedPrice)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">총 매입 가능</th>
+            {results.map((r, i) => (
+              <td key={i} className={r === best ? 'compare__col--best' : ''}>
+                {formatKRW(r.stressMaxPropertyPrice)}
+              </td>
+            ))}
+          </tr>
+          <tr className="compare__row--cost">
+            <th scope="row">부대비용</th>
+            {results.map((r, i) => (
+              <td key={i} className={r === best ? 'compare__col--best' : ''}>
+                <span className="compare__cost-val">−{formatKRW(r.acquisitionCosts.total)}</span>
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">최대 대출</th>
+            {results.map((r, i) => (
+              <td key={i} className={r === best ? 'compare__col--best' : ''}>
+                {formatKRW(r.stressMaxLoanAmount)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">월 상환액</th>
+            {results.map((r, i) => (
+              <td key={i} className={r === best ? 'compare__col--best' : ''}>
+                {formatKRW(r.stressMonthlyPayment)}
+              </td>
+            ))}
+          </tr>
         </tbody>
       </table>
     </div>
