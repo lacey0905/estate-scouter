@@ -237,29 +237,6 @@ function App() {
         <div className="content__inner">
           <section className="dashboard" aria-labelledby="dash-title">
             <div className="dashboard__grid">
-              <div className="dashboard__limit">
-                <p className="dashboard__eyebrow" id="dash-title">실 매입 가능 한도</p>
-                <p className="dashboard__amount">{formatKRW(bestResult.adjustedPrice)}</p>
-                <p className="dashboard__meta">
-                  <span className="dashboard__badge">{bestResult.label}</span>
-                  DSR {bestResult.effectiveRate.toFixed(2)}% · {incomeYear}년 소득 {formatKRW(annualIncome * 10000)}
-                </p>
-                <dl className="dashboard__kpis">
-                  <div className="dashboard__kpi">
-                    <dt>최대 대출</dt>
-                    <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
-                  </div>
-                  <div className="dashboard__kpi">
-                    <dt>부대비용</dt>
-                    <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
-                  </div>
-                  <div className="dashboard__kpi dashboard__kpi--accent">
-                    <dt>월 상환액</dt>
-                    <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
-                  </div>
-                </dl>
-              </div>
-
               <div className="dashboard__target">
                 <p className="dashboard__eyebrow">매물 가격</p>
                 <p className="dashboard__target-value">{formatKRW(targetWon)}</p>
@@ -284,6 +261,29 @@ function App() {
                   <div className="dashboard__kpi dashboard__kpi--accent">
                     <dt>필요 총액</dt>
                     <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="dashboard__limit">
+                <p className="dashboard__eyebrow" id="dash-title">실 매입 가능 한도</p>
+                <p className="dashboard__amount">{formatKRW(bestResult.adjustedPrice)}</p>
+                <p className="dashboard__meta">
+                  <span className="dashboard__badge">{bestResult.label}</span>
+                  DSR {bestResult.effectiveRate.toFixed(2)}% · {incomeYear}년 소득 {formatKRW(annualIncome * 10000)}
+                </p>
+                <dl className="dashboard__kpis">
+                  <div className="dashboard__kpi">
+                    <dt>최대 대출</dt>
+                    <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
+                  </div>
+                  <div className="dashboard__kpi">
+                    <dt>부대비용</dt>
+                    <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
+                  </div>
+                  <div className="dashboard__kpi dashboard__kpi--accent">
+                    <dt>월 상환액</dt>
+                    <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
                   </div>
                 </dl>
               </div>

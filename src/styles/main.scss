@@ -420,7 +420,7 @@ button {
     padding: 28px 32px 24px;
   }
 
-  &__limit {
+  &__target {
     border-right: 1px solid $color-border;
   }
 
@@ -735,7 +735,7 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .dashboard__limit {
+  .dashboard__target {
     border-right: none !important;
     border-bottom: 1px solid $color-border;
   }
@@ -744,7 +744,7 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .dashboard__limit {
+  .dashboard__target {
     border-right: none !important;
     border-bottom: 1px solid $color-border;
   }
