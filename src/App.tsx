@@ -235,59 +235,38 @@ function App() {
 
       <main className="content">
         <div className="content__inner">
-          <section className="dashboard" aria-labelledby="dash-title">
-            <div className="dashboard__grid">
-              <div className="dashboard__target">
-                <p className="dashboard__eyebrow">매물 가격</p>
-                <p className="dashboard__target-value">{formatKRW(targetWon)}</p>
-                <input
-                  type="range"
-                  className="dashboard__range"
-                  min={0}
-                  max={maxSlider}
-                  step={100}
-                  value={effectiveTargetMan}
-                  onChange={(e) => setTargetPriceMan(Number(e.target.value))}
-                />
-                <div className="dashboard__range-labels">
-                  <span>0</span>
-                  <span>{formatKRW(maxSlider * 10000)}</span>
-                </div>
-                <dl className="dashboard__kpis">
-                  <div className="dashboard__kpi">
-                    <dt>부대비용</dt>
-                    <dd>{formatKRW(targetCosts.total)}</dd>
-                  </div>
-                  <div className="dashboard__kpi dashboard__kpi--accent">
-                    <dt>필요 총액</dt>
-                    <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="dashboard__limit">
-                <p className="dashboard__eyebrow" id="dash-title">실 매입 가능 한도</p>
-                <p className="dashboard__amount">{formatKRW(bestResult.adjustedPrice)}</p>
-                <p className="dashboard__meta">
-                  <span className="dashboard__badge">{bestResult.label}</span>
-                  DSR {bestResult.effectiveRate.toFixed(2)}% · {incomeYear}년 소득 {formatKRW(annualIncome * 10000)}
-                </p>
-                <dl className="dashboard__kpis">
-                  <div className="dashboard__kpi">
-                    <dt>최대 대출</dt>
-                    <dd>{formatKRW(bestResult.stressMaxLoanAmount)}</dd>
-                  </div>
-                  <div className="dashboard__kpi">
-                    <dt>부대비용</dt>
-                    <dd>{formatKRW(bestResult.acquisitionCosts.total)}</dd>
-                  </div>
-                  <div className="dashboard__kpi dashboard__kpi--accent">
-                    <dt>월 상환액</dt>
-                    <dd>{formatKRW(bestResult.stressMonthlyPayment)}</dd>
-                  </div>
-                </dl>
-              </div>
+          <section className="dashboard">
+            <div className="dashboard__top">
+              <p className="dashboard__eyebrow">매물 가격</p>
+              <p className="dashboard__target-value">{formatKRW(targetWon)}</p>
             </div>
+            <input
+              type="range"
+              className="dashboard__range"
+              min={0}
+              max={maxSlider}
+              step={100}
+              value={effectiveTargetMan}
+              onChange={(e) => setTargetPriceMan(Number(e.target.value))}
+            />
+            <div className="dashboard__range-labels">
+              <span>0</span>
+              <span>{formatKRW(maxSlider * 10000)}</span>
+            </div>
+            <dl className="dashboard__kpis">
+              <div className="dashboard__kpi">
+                <dt>부대비용</dt>
+                <dd>{formatKRW(targetCosts.total)}</dd>
+              </div>
+              <div className="dashboard__kpi dashboard__kpi--accent">
+                <dt>필요 총액</dt>
+                <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
+              </div>
+              <div className="dashboard__kpi">
+                <dt>자기자본</dt>
+                <dd>{formatKRW(assets * 10000)}</dd>
+              </div>
+            </dl>
           </section>
 
           <section className="compare" aria-labelledby="compare-title">
