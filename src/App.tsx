@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react';
-import { runAllScenarios, calcMonthlyPayment, formatKRW, type LoanResult } from './utils/calculator';
+import { runAllScenarios, calcMonthlyPayment, formatKRW, formatKRWWon, type LoanResult } from './utils/calculator';
 import { useAppSettings } from './hooks/useAppSettings';
 import {
   LOAN_RATE_TYPES,
@@ -8,6 +8,18 @@ import {
   type LoanRateType,
 } from './utils/stressDsr';
 import { type OwnedHomes, calcAcquisitionCosts } from './utils/acquisitionCost';
+import {
+  ACTUAL_INITIAL_CASH_WON,
+  AIR_CONDITIONER_COST_WON,
+  BALCONY_EXTENSION_COST_WON,
+  BUILDER_RECOGNIZED_PAYMENT_WON,
+  PROPERTY_CONTRACT_PRICE_WON,
+  PROPERTY_LIST_PRICE_WON,
+  PROPERTY_LTV_BASE_PRICE_WON,
+  PROPERTY_PREMIUM_WON,
+  REMAINING_PROPERTY_BALANCE_WON,
+  TARGET_PROPERTY_PRICE_WON,
+} from './utils/property';
 import './styles/main.scss';
 
 const OWNED_HOMES_OPTIONS: { value: OwnedHomes; label: string }[] = [
@@ -33,7 +45,6 @@ function App() {
     setIsLargeArea,
     setLtv,
     setAppraisalRate,
-    setTargetPriceMan,
     setInterimRate,
     setInterimTotalMonths,
   } = useAppSettings();
@@ -53,7 +64,6 @@ function App() {
     isLargeArea,
     ltv,
     appraisalRate,
-    targetPriceMan,
     interimRate,
     interimTotalMonths,
   } = settings;
@@ -87,22 +97,22 @@ function App() {
     , results[0]);
   }, [results]);
 
-  const maxAffordable = Math.max(...results.map(r => r.adjustedPrice));
-  const maxSlider = Math.ceil(maxAffordable * 2 / 10000);
-  const targetWon = targetPriceMan * 10000;
+  const targetWon = TARGET_PROPERTY_PRICE_WON;
+  const ltvBaseWon = PROPERTY_LTV_BASE_PRICE_WON;
+  const remainingBalanceWon = REMAINING_PROPERTY_BALANCE_WON;
 
   const targetCosts = useMemo(() => {
     return calcAcquisitionCosts(targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths);
   }, [targetWon, ownedHomes, isLargeArea, interimRate, interimTotalMonths]);
 
-  const ltvLimitWon = targetWon * (appraisalRate / 100) * (ltv / 100);
+  const ltvLimitWon = ltvBaseWon * (appraisalRate / 100) * (ltv / 100);
 
   const simulations = useMemo(() => {
     return results.map((r) => {
-      const totalNeeded = targetWon + targetCosts.total;
+      const totalNeeded = remainingBalanceWon + targetCosts.total;
       const assetsWon = assets * 10000;
       const rawLoan = Math.max(0, totalNeeded - assetsWon);
-      const maxLoan = r.stressMaxLoanAmount;
+      const maxLoan = r.dsrStressMaxLoanAmount;
       const loanCap = Math.min(maxLoan, ltvLimitWon);
       const actualLoan = Math.min(rawLoan, loanCap);
       const shortfall = Math.max(0, rawLoan - loanCap);
@@ -112,9 +122,9 @@ function App() {
         ? calcMonthlyPayment(actualLoan, r.interestRate, termYears)
         : 0;
       const margin = Math.max(0, loanCap - actualLoan);
-      return { ...r, requiredLoan: rawLoan, actualLoan, shortfall, affordable, monthly, margin, totalNeeded };
+      return { ...r, assetsWon, requiredLoan: rawLoan, actualLoan, loanCap, shortfall, affordable, monthly, margin, totalNeeded };
     });
-  }, [results, targetWon, targetCosts, assets, loanTermYears, ltvLimitWon]);
+  }, [results, remainingBalanceWon, targetCosts, assets, loanTermYears, ltvLimitWon]);
 
   return (
     <div className="layout">
@@ -166,7 +176,7 @@ function App() {
           <SidebarSection title="자산">
             <div className="field-range">
               <div className="field-range__header">
-                <span className="field-range__label">보유 자산</span>
+                <span className="field-range__label">잔여 자산</span>
                 <span className="field-range__value">{formatKRW(assets * 10000)}</span>
               </div>
               <div className="field-range__row">
@@ -197,7 +207,10 @@ function App() {
                 <span>10억</span>
               </div>
             </div>
-            <InputField label="직접 입력" value={assets} onChange={setAssets} suffix="만원" />
+            <InputField label="잔여 자산 직접 입력" value={assets} onChange={setAssets} suffix="만원" />
+            <p className="sidebar__hint">
+              실제 초기 투입 {formatKRWWon(ACTUAL_INITIAL_CASH_WON)}은 이미 낸 돈으로 보고, 여기에는 앞으로 쓸 수 있는 잔여 현금을 입력합니다.
+            </p>
           </SidebarSection>
 
           <SidebarSection title="금리">
@@ -313,72 +326,105 @@ function App() {
 
       <main className="content">
         <div className="content__inner">
-          <section className="dashboard">
-            <div className="dashboard__price-panel">
-              <div className="dashboard__price-header">
+          <section className="dashboard" aria-label="매물 및 부대비용">
+            <header className="dashboard__summary">
+              <div className="dashboard__property">
                 <p className="dashboard__eyebrow">매물 가격</p>
                 <p className="dashboard__target-value">{formatKRW(targetWon)}</p>
+                <span className="dashboard__badge">실거래 기준</span>
+                <dl className="dashboard__property-breakdown">
+                  <div className="dashboard__property-row">
+                    <dt>분양가</dt>
+                    <dd>{formatKRW(PROPERTY_LIST_PRICE_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row">
+                    <dt>확장비</dt>
+                    <dd>{formatKRWWon(BALCONY_EXTENSION_COST_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row">
+                    <dt>에어컨</dt>
+                    <dd>{formatKRWWon(AIR_CONDITIONER_COST_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row">
+                    <dt>건설사 계약 총액</dt>
+                    <dd>{formatKRW(PROPERTY_CONTRACT_PRICE_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row dashboard__property-row--premium">
+                    <dt>프리미엄</dt>
+                    <dd>{formatKRWWon(PROPERTY_PREMIUM_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row">
+                    <dt>건설사 납부 인정</dt>
+                    <dd>{formatKRWWon(BUILDER_RECOGNIZED_PAYMENT_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row dashboard__property-row--cash">
+                    <dt>실제 초기 투입</dt>
+                    <dd>{formatKRWWon(ACTUAL_INITIAL_CASH_WON)}</dd>
+                  </div>
+                  <div className="dashboard__property-row">
+                    <dt>남은 잔금</dt>
+                    <dd>{formatKRWWon(remainingBalanceWon)}</dd>
+                  </div>
+                </dl>
               </div>
-              <div className="dashboard__range-row">
-                <button
-                  type="button"
-                  className="dashboard__range-btn"
-                  onClick={() => setTargetPriceMan(Math.max(0, targetPriceMan - 100))}
-                  aria-label="100만원 감소"
-                >−</button>
-                <input
-                  type="range"
-                  className="dashboard__range"
-                  min={0}
-                  max={maxSlider}
-                  step={100}
-                  value={targetPriceMan}
-                  onChange={(e) => setTargetPriceMan(Number(e.target.value))}
-                />
-                <button
-                  type="button"
-                  className="dashboard__range-btn"
-                  onClick={() => setTargetPriceMan(targetPriceMan + 100)}
-                  aria-label="100만원 증가"
-                >+</button>
-              </div>
-              <div className="dashboard__range-labels">
-                <span>0</span>
-                <span>{formatKRW(maxSlider * 10000)}</span>
-              </div>
-
-              <dl className="dashboard__kpis">
-                <div className="dashboard__kpi dashboard__kpi--accent">
-                  <dt>필요 총액</dt>
-                  <dd>{formatKRW(targetWon + targetCosts.total)}</dd>
+              <dl className="dashboard__metrics">
+                <div className="dashboard__metric dashboard__metric--accent">
+                  <dt>앞으로 필요</dt>
+                  <dd>{formatKRW(remainingBalanceWon + targetCosts.total)}</dd>
+                  <dd className="dashboard__metric-sub">남은 잔금 + 부대비용</dd>
                 </div>
-                <div className="dashboard__kpi">
-                  <dt>자기자본</dt>
+                <div className="dashboard__metric">
+                  <dt>잔여 자산</dt>
                   <dd>{formatKRW(assets * 10000)}</dd>
+                  <dd className="dashboard__metric-sub">초기 투입 후 남은 현금</dd>
+                </div>
+                <div className="dashboard__metric">
+                  <dt>LTV 기준가</dt>
+                  <dd>{formatKRW(ltvBaseWon)}</dd>
+                  <dd className="dashboard__metric-sub">마피 반영 전</dd>
+                </div>
+                <div className="dashboard__metric dashboard__metric--cost">
+                  <dt>부대비용</dt>
+                  <dd>{formatKRWWon(targetCosts.total)}</dd>
                 </div>
               </dl>
-            </div>
+            </header>
 
-            <div className="dashboard__cost-panel">
-              <div className="dashboard__cost-header">
-                <span className="dashboard__cost-label">부대비용</span>
-                <span className="dashboard__cost-total">{formatKRW(targetCosts.total)}</span>
-              </div>
-              <ul className="dashboard__cost-list">
-                <li><span>취득세</span><span>{formatKRW(targetCosts.acquisitionTax)}</span></li>
-                <li><span>지방교육세</span><span>{formatKRW(targetCosts.localEducationTax)}</span></li>
-                {targetCosts.ruralSpecialTax > 0 && (
-                  <li><span>농어촌특별세</span><span>{formatKRW(targetCosts.ruralSpecialTax)}</span></li>
-                )}
-                <li><span>중개수수료</span><span>{formatKRW(targetCosts.brokerageFee)}</span></li>
-                <li><span>기타 (법무사·인지세·채권)</span><span>{formatKRW(targetCosts.otherCosts)}</span></li>
-                {targetCosts.interimInterest > 0 && (
+            <div className="dashboard__costs">
+              <h3 className="dashboard__costs-title">부대비용 내역</h3>
+              <div className="dashboard__costs-grid">
+                <div className="dashboard__cost-tax" role="group" aria-label="취득세">
+                  <p className="dashboard__cost-tax-label">취득세</p>
+                  <div className="dashboard__cost-tax-box">
+                    <div className="dashboard__cost-tax-line">
+                      <span>산출</span>
+                      <span>{formatKRWWon(targetCosts.acquisitionTaxBeforeReduction)}</span>
+                    </div>
+                    <div className="dashboard__cost-tax-line dashboard__cost-tax-line--deduct">
+                      <span>생애최초 감면</span>
+                      <span>−{formatKRWWon(targetCosts.lifetimeFirstReduction)}</span>
+                    </div>
+                    <div className="dashboard__cost-tax-result">
+                      <span>납부</span>
+                      <span>{formatKRWWon(targetCosts.acquisitionTax)}</span>
+                    </div>
+                  </div>
+                </div>
+                <ul className="dashboard__cost-list">
+                  <li><span>지방교육세</span><span>{formatKRWWon(targetCosts.localEducationTax)}</span></li>
+                  {targetCosts.ruralSpecialTax > 0 && (
+                    <li><span>농어촌특별세</span><span>{formatKRWWon(targetCosts.ruralSpecialTax)}</span></li>
+                  )}
+                  <li><span>중개수수료</span><span>{formatKRWWon(targetCosts.brokerageFee)}</span></li>
+                  <li><span>기타</span><span>{formatKRWWon(targetCosts.otherCosts)}</span></li>
                   <li className="dashboard__cost-item--highlight">
-                    <span>중도금 이자 (후불)</span>
-                    <span>{formatKRW(targetCosts.interimInterest)}</span>
+                    <span>중도금 이자</span><span>{formatKRWWon(targetCosts.interimInterest)}</span>
                   </li>
-                )}
-              </ul>
+                </ul>
+              </div>
+              <p className="dashboard__cost-note">
+                합계는 납부 취득세·지방교육세·수수료·기타·중도금 이자 5항목입니다. 산출·감면은 참고용입니다.
+              </p>
             </div>
           </section>
 
@@ -390,14 +436,14 @@ function App() {
               best={bestResult}
               simulations={simulations}
               targetCosts={targetCosts}
-              targetWon={targetWon}
+              ltvBaseWon={ltvBaseWon}
             />
           </section>
 
           <footer className="content__footer">
             참고용 계산입니다. 실제 한도는 금융기관 심사 결과에 따라 달라질 수 있습니다.
             <br />
-            취득세는 다주택 중과 기본 세율 기준이며, 정책 변경에 따라 달라질 수 있습니다.
+            취득세·지방교육세는 생애최초 감면 반영 실납부액(고정값) 기준입니다.
           </footer>
         </div>
       </main>
@@ -501,8 +547,11 @@ function InputField({
 interface Simulation {
   label: string;
   stressMaxLoanAmount: number;
+  assetsWon: number;
+  totalNeeded: number;
   requiredLoan: number;
   actualLoan: number;
+  loanCap: number;
   shortfall: number;
   affordable: boolean;
   monthly: number;
@@ -514,10 +563,10 @@ interface CompareTableProps {
   best: LoanResult;
   simulations: Simulation[];
   targetCosts: ReturnType<typeof calcAcquisitionCosts>;
-  targetWon: number;
+  ltvBaseWon: number;
 }
 
-function CompareTable({ results, best, simulations, targetCosts, targetWon }: CompareTableProps) {
+function CompareTable({ results, best, simulations, targetCosts, ltvBaseWon }: CompareTableProps) {
   return (
     <div className="compare__wrap">
       <table className="compare__table">
@@ -541,7 +590,7 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
                   <span className={`compare__col-status ${sim.affordable ? 'compare__col-status--ok' : 'compare__col-status--over'}`}>
                     {sim.affordable
                       ? '매입 가능'
-                      : `자기자본 부족 (${formatKRW(sim.shortfall)})`}
+                      : `잔여 자산 부족 (${formatKRW(sim.shortfall)})`}
                   </span>
                 </th>
               );
@@ -554,20 +603,81 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
           </tr>
           <tr className="compare__row--main">
             <th scope="row">대출 한도</th>
-            {results.map((r, i) => (
+            {simulations.map((s, i) => (
               <td
                 key={i}
                 className={[
-                  r === best ? 'compare__col--best' : '',
+                  results[i] === best ? 'compare__col--best' : '',
                   'compare__cell--main',
                 ].filter(Boolean).join(' ')}
               >
-                {formatKRW(r.stressMaxLoanAmount)}
+                {formatKRW(s.loanCap)}
               </td>
             ))}
           </tr>
           <tr className="compare__row--section">
-            <th scope="row" colSpan={results.length + 1}>매물 기준 ({formatKRW(targetWon)})</th>
+            <th scope="row" colSpan={results.length + 1}>
+              남은 잔금 기준 ({formatKRW(REMAINING_PROPERTY_BALANCE_WON)}) · LTV 기준 ({formatKRW(ltvBaseWon)})
+            </th>
+          </tr>
+          <tr>
+            <th scope="row">남은 잔금</th>
+            {simulations.map((_, i) => (
+              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                {formatKRW(REMAINING_PROPERTY_BALANCE_WON)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">부대비용</th>
+            {results.map((_, i) => (
+              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                <span className="compare__add-val">+{formatKRW(targetCosts.total)}</span>
+              </td>
+            ))}
+          </tr>
+          {targetCosts.interimInterest > 0 && (
+            <tr className="compare__row--cost">
+              <th scope="row">└ 중도금 이자</th>
+              {results.map((_, i) => (
+                <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                  <span className="compare__muted-val">포함 {formatKRW(targetCosts.interimInterest)}</span>
+                </td>
+              ))}
+            </tr>
+          )}
+          <tr>
+            <th scope="row">총 필요액</th>
+            {simulations.map((s, i) => (
+              <td
+                key={i}
+                className={results[i] === best ? 'compare__col--best' : ''}
+              >
+                {formatKRW(s.totalNeeded)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <th scope="row">잔여 자산 차감</th>
+            {simulations.map((s, i) => (
+              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
+                <span className="compare__deduct-val">−{formatKRW(s.assetsWon)}</span>
+              </td>
+            ))}
+          </tr>
+          <tr className="compare__row--main">
+            <th scope="row">필요 대출액</th>
+            {simulations.map((s, i) => (
+              <td
+                key={i}
+                className={[
+                  results[i] === best ? 'compare__col--best' : '',
+                  'compare__cell--main',
+                ].filter(Boolean).join(' ')}
+              >
+                {formatKRW(s.requiredLoan)}
+              </td>
+            ))}
           </tr>
           <tr>
             <th scope="row">대출 실행액</th>
@@ -580,24 +690,6 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
               </td>
             ))}
           </tr>
-          <tr>
-            <th scope="row">부대비용</th>
-            {results.map((_, i) => (
-              <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
-                <span className="compare__cost-val">−{formatKRW(targetCosts.total)}</span>
-              </td>
-            ))}
-          </tr>
-          {targetCosts.interimInterest > 0 && (
-            <tr className="compare__row--cost">
-              <th scope="row">└ 중도금 이자</th>
-              {results.map((_, i) => (
-                <td key={i} className={results[i] === best ? 'compare__col--best' : ''}>
-                  <span className="compare__cost-val">−{formatKRW(targetCosts.interimInterest)}</span>
-                </td>
-              ))}
-            </tr>
-          )}
           <tr>
             <th scope="row">월 상환액</th>
             {simulations.map((s, i) => (
@@ -621,7 +713,7 @@ function CompareTable({ results, best, simulations, targetCosts, targetWon }: Co
             ))}
           </tr>
           <tr>
-            <th scope="row">자기자본 부족</th>
+            <th scope="row">잔여 자산 부족</th>
             {simulations.map((s, i) => (
               <td
                 key={i}

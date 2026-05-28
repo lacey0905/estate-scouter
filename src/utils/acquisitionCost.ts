@@ -1,6 +1,24 @@
 export type OwnedHomes = 0 | 1 | 2;
 
+/** 중개수수료 (고정) */
+export const BROKERAGE_FEE = 1_860_000;
+
+/** 중도금 이자 후불 (고정, 약 1,430만) */
+export const INTERIM_INTEREST_FIXED = 14_300_000;
+
+/** 법무사·인지세·채권 (고정) */
+export const OTHER_COSTS_FIXED = 1_350_000;
+
+/** 취득세·부가세 (생애최초 감면 반영, 고정) */
+export const ACQUISITION_TAX_BEFORE_REDUCTION = 12_371_400;
+export const LIFETIME_FIRST_REDUCTION = 2_000_000;
+export const ACQUISITION_TAX_AFTER_REDUCTION = 10_371_400;
+export const LOCAL_EDUCATION_TAX_FIXED = 1_037_140;
+export const RURAL_SPECIAL_TAX_FIXED = 0;
+
 export interface AcquisitionCostBreakdown {
+  acquisitionTaxBeforeReduction: number;
+  lifetimeFirstReduction: number;
   acquisitionTax: number;
   localEducationTax: number;
   ruralSpecialTax: number;
@@ -10,91 +28,60 @@ export interface AcquisitionCostBreakdown {
   total: number;
 }
 
-/**
- * 취득세율 (1세대 기준)
- * - 무주택(취득 후 1주택): 6억이하 1%, 6~9억 비례(1~3%), 9억초과 3%
- * - 1주택 보유(취득 후 2주택): 8%
- * - 2주택+ 보유(취득 후 3주택+): 12%
- */
-function getAcquisitionTaxRate(price: number, ownedHomes: OwnedHomes): number {
-  const totalHomes = ownedHomes + 1;
-  if (totalHomes >= 3) return 0.12;
-  if (totalHomes >= 2) return 0.08;
-
-  const priceInEok = price / 1_0000_0000;
-  if (priceInEok <= 6) return 0.01;
-  if (priceInEok <= 9) return (priceInEok * 2 / 3 - 3) / 100;
-  return 0.03;
-}
-
-/**
- * 중개수수료율 (2021년 개편 기준, 매매)
- */
-function getBrokerageRate(price: number): number {
-  const man = price / 10000;
-  if (man < 5000) return 0.006;
-  if (man < 20000) return 0.005;
-  if (man < 60000) return 0.004;
-  if (man < 90000) return 0.005;
-  if (man < 120000) return 0.005;
-  if (man < 150000) return 0.006;
-  return 0.007;
-}
-
-/**
- * 중개수수료 상한 (5천만원 미만, 2억 미만만 상한 적용)
- */
-function getBrokerageFee(price: number): number {
-  const man = price / 10000;
-  const rate = getBrokerageRate(price);
-  const fee = price * rate;
-  if (man < 5000) return Math.min(fee, 250000);
-  if (man < 20000) return Math.min(fee, 800000);
-  return fee;
-}
-
-/**
- * 중도금 대출 후불 이자 계산
- * 분양가의 60%를 6회차로 분할 실행 → 각 회차 융자금 = 분양가 × 10%
- * 1~2회차 무이자, 3~6회차 이자 후불제
- * interimInterest = (분양가 × 10%) × (rate/100) × (이자부담 합산개월 / 12)
- */
-export function calcInterimInterest(
-  price: number,
-  interimRate: number,
-  interimTotalMonths: number,
-): number {
-  if (price <= 0 || interimRate <= 0 || interimTotalMonths <= 0) return 0;
-  const perInstallment = price * 0.1;
-  return Math.floor(perInstallment * (interimRate / 100) * (interimTotalMonths / 12));
-}
+const ZERO_COSTS: AcquisitionCostBreakdown = {
+  acquisitionTaxBeforeReduction: 0,
+  lifetimeFirstReduction: 0,
+  acquisitionTax: 0,
+  localEducationTax: 0,
+  ruralSpecialTax: 0,
+  brokerageFee: 0,
+  otherCosts: 0,
+  interimInterest: 0,
+  total: 0,
+};
 
 export function calcAcquisitionCosts(
   price: number,
-  ownedHomes: OwnedHomes,
-  isLargeArea: boolean,
-  interimRate = 0,
-  interimTotalMonths = 0,
+  _ownedHomes: OwnedHomes,
+  _isLargeArea: boolean,
+  _interimRate = 0,
+  _interimTotalMonths = 0,
 ): AcquisitionCostBreakdown {
   if (price <= 0) {
-    return { acquisitionTax: 0, localEducationTax: 0, ruralSpecialTax: 0, brokerageFee: 0, otherCosts: 0, interimInterest: 0, total: 0 };
+    return { ...ZERO_COSTS };
   }
 
-  const taxRate = getAcquisitionTaxRate(price, ownedHomes);
-  const acquisitionTax = Math.floor(price * taxRate);
-  const localEducationTax = Math.floor(acquisitionTax * 0.1);
-  const ruralSpecialTax = isLargeArea ? Math.floor(price * 0.002) : 0;
+  const acquisitionTaxBeforeReduction = ACQUISITION_TAX_BEFORE_REDUCTION;
+  const lifetimeFirstReduction = LIFETIME_FIRST_REDUCTION;
+  const acquisitionTax = ACQUISITION_TAX_AFTER_REDUCTION;
+  const localEducationTax = LOCAL_EDUCATION_TAX_FIXED;
+  const ruralSpecialTax = RURAL_SPECIAL_TAX_FIXED;
 
-  const brokerageFee = Math.floor(getBrokerageFee(price));
+  const brokerageFee = BROKERAGE_FEE;
 
-  const bondDiscount = Math.floor(price * 0.001);
-  const otherCosts = 500000 + 150000 + bondDiscount;
+  const otherCosts = OTHER_COSTS_FIXED;
 
-  const interimInterest = calcInterimInterest(price, interimRate, interimTotalMonths);
+  const interimInterest = INTERIM_INTEREST_FIXED;
 
-  const total = acquisitionTax + localEducationTax + ruralSpecialTax + brokerageFee + otherCosts + interimInterest;
+  const total =
+    acquisitionTax +
+    localEducationTax +
+    ruralSpecialTax +
+    brokerageFee +
+    otherCosts +
+    interimInterest;
 
-  return { acquisitionTax, localEducationTax, ruralSpecialTax, brokerageFee, otherCosts, interimInterest, total };
+  return {
+    acquisitionTaxBeforeReduction,
+    lifetimeFirstReduction,
+    acquisitionTax,
+    localEducationTax,
+    ruralSpecialTax,
+    brokerageFee,
+    otherCosts,
+    interimInterest,
+    total,
+  };
 }
 
 /**

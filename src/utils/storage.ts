@@ -16,7 +16,6 @@ export interface AppSettings {
   loanTermYears: number;
   ownedHomes: OwnedHomes;
   isLargeArea: boolean;
-  targetPriceMan: number;
   ltv: number;
   appraisalRate: number;
   interimRate: number;
@@ -38,7 +37,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   loanTermYears: 30,
   ownedHomes: 0,
   isLargeArea: false,
-  targetPriceMan: 50000,
   ltv: 70,
   appraisalRate: 100,
   interimRate: 3.95,
@@ -87,7 +85,6 @@ export function normalizeSettings(raw: unknown): AppSettings {
     loanTermYears: Math.min(50, Math.max(10, loanTermYears)),
     ownedHomes: pickOwnedHomes(data.ownedHomes, DEFAULT_SETTINGS.ownedHomes),
     isLargeArea: pickBoolean(data.isLargeArea, DEFAULT_SETTINGS.isLargeArea),
-    targetPriceMan: Math.max(0, pickNumber(data.targetPriceMan, DEFAULT_SETTINGS.targetPriceMan)),
     ltv: Math.min(100, Math.max(0, pickNumber(data.ltv, DEFAULT_SETTINGS.ltv))),
     appraisalRate: Math.max(100, pickNumber(data.appraisalRate, DEFAULT_SETTINGS.appraisalRate)),
     interimRate: pickNumber(data.interimRate, DEFAULT_SETTINGS.interimRate),

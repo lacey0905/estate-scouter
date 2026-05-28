@@ -23,6 +23,7 @@ export interface LoanResult {
   maxLoanAmount: number;
   maxPropertyPrice: number;
   monthlyPaymentAtMax: number;
+  dsrStressMaxLoanAmount: number;
   stressMaxLoanAmount: number;
   stressMaxPropertyPrice: number;
   stressMonthlyPayment: number;
@@ -131,6 +132,7 @@ export function calculateLoanScenario(
     maxLoanAmount: Math.max(0, maxLoanAmount),
     maxPropertyPrice: Math.max(0, assets + maxLoanAmount),
     monthlyPaymentAtMax,
+    dsrStressMaxLoanAmount: Math.max(0, dsrStressMaxLoan),
     stressMaxLoanAmount: Math.max(0, stressMaxLoanAmount),
     stressMaxPropertyPrice,
     stressMonthlyPayment,
@@ -193,4 +195,9 @@ export function formatKRW(amount: number): string {
     return `${Math.floor(amount / 10_000).toLocaleString()}만원`;
   }
   return `${Math.floor(amount).toLocaleString()}원`;
+}
+
+/** 부대비용 항목 등 — 원 단위 그대로 표시 */
+export function formatKRWWon(amount: number): string {
+  return `${Math.round(amount).toLocaleString('ko-KR')}원`;
 }
